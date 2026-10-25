@@ -13,7 +13,7 @@ APP="$BUILD/$APP_NAME.app"
 DMG="$BUILD/$APP_NAME-$VERSION.dmg"
 VOLNAME="$APP_NAME $VERSION"
 
-echo "▸ 版本 $VERSION（构建号 $BUILD_NUMBER）"
+echo "▸ 版本 ${VERSION}（构建号 ${BUILD_NUMBER}）"
 
 echo "▸ 正在以发布模式编译 Swift 应用"
 swift build -c release --product "$APP_NAME" 2>&1 | grep -E "error|warning: unre|Compiling|Build complete" || true
