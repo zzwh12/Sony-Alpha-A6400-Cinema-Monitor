@@ -16,7 +16,7 @@ jobs:
     runs-on: macos-15
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 安装 XcodeGen
         run: brew install xcodegen
@@ -131,7 +131,7 @@ jobs:
           (cd "$PACKAGE_PATH" && zip -qry "$GITHUB_WORKSPACE/CinemaHUDMobile-unsigned.ipa" Payload)
 
       - name: 上传 IPA 构建产物
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: CinemaHUD-iOS-安装包
           path: CinemaHUDMobile*.ipa
