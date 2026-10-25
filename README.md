@@ -277,6 +277,22 @@ Signing), and press Run. In the Simulator, `CINEMAHUD_ADDRESS=127.0.0.1:8080` or
 `CINEMAHUD_BRIDGE=http://127.0.0.1:8899` as scheme environment variables connect to the camera
 simulator or to the Mac app running on the same machine.
 
+### Build an IPA with GitHub Actions
+
+Run **Build iOS IPA** from the Actions tab (or push to `main` / a `v*` tag). The workflow uploads
+the IPA as the `CinemaHUD-iOS-IPA` artifact. With no signing secrets, it produces an unsigned IPA
+that must be signed before installation. To have the workflow export an Ad Hoc signed IPA, add these
+repository Actions secrets:
+
+- `APPLE_CERTIFICATE_BASE64`: base64-encoded Apple Distribution `.p12` certificate.
+- `APPLE_CERTIFICATE_PASSWORD`: password for that `.p12` file.
+- `PROVISIONING_PROFILE_BASE64`: base64-encoded Ad Hoc provisioning profile for
+  `com.shivvyas.cinemahud.mobile`.
+- `APPLE_TEAM_ID`: your Apple Developer Team ID.
+
+All four signing secrets must be set for signed export. The provisioning profile must include the
+devices where you intend to install the Ad Hoc build.
+
 Bridge protocol (plain HTTP on port 8899, Bonjour `_cinemahud._tcp`): `GET /state` (JSON),
 `GET /events` (server-sent state changes), `GET /stream` (MJPEG-style framed JPEG bytes),
 `POST /cmd` (`{"op":"setISO","value":"800"}`). Any client can use it.
