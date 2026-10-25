@@ -14,7 +14,7 @@ public enum AdvisorPrompt {
         let angle = ShutterAngle.label(speed: s.shutterSpeed, fps: projectFPS)
         lines.append("相机：\(localizedCameraValue(s.exposureMode ?? "未知"))模式，快门 \(s.shutterSpeed ?? "未知")（\(projectFPS) fps 下 \(angle)°），"
                      + "光圈 F\(s.fNumber ?? "未知")，EI \(s.iso ?? "未知")，曝光补偿 \(s.exposureCompensation?.label ?? "0")，"
-                     + "白平衡 \(localizedCameraValue(s.whiteBalanceMode ?? "未知"))，对焦 \(localizedCameraValue(s.focusMode ?? "未知"))，状态 \(localizedCameraValue(s.focusStatus ?? "未知")），"
+                     + "白平衡 \(localizedCameraValue(s.whiteBalanceMode ?? "未知"))，对焦 \(localizedCameraValue(s.focusMode ?? "未知"))，状态 \(localizedCameraValue(s.focusStatus ?? "未知"))），"
                      + "图片配置文件 \(profile.short)。")
         var frame = "画面：平均亮度 \(Int(m.meanLuma.rounded())) / 100，\(Int((m.whiteClip * 100).rounded()))% 高光溢出，"
                   + "\(Int((m.blackClip * 100).rounded()))% 暗部为纯黑，对焦区域清晰度 \(String(format: "%.2f", m.afSharpness)) / 1"
