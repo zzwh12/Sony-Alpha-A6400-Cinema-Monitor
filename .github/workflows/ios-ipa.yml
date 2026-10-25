@@ -2,6 +2,11 @@ name: 构建 iOS 安装包
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "要更新的 Release 标签（留空则只构建）"
+        required: false
+        type: string
   push:
     branches: [main]
     tags: ["v*"]
@@ -130,27 +135,44 @@ jobs:
           cp -R "$APP_PATH" "$PACKAGE_PATH/Payload/"
           (cd "$PACKAGE_PATH" && zip -qry "$GITHUB_WORKSPACE/CinemaHUDMobile-unsigned.ipa" Payload)
 
+      - name: 编译 macOS 应用并打包 DMG
+        run: ./scripts/build-dmg.sh
+
       - name: 上传 IPA 构建产物
         uses: actions/upload-artifact@v6
         with:
           name: CinemaHUD-iOS-安装包
-          path: CinemaHUDMobile*.ipa
+          path: |
+            CinemaHUDMobile*.ipa
+            build/*.dmg
           if-no-files-found: error
           retention-days: 14
 
       - name: 发布 GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
         run: |
           set -euo pipefail
           shopt -s nullglob
-          IPA_FILES=(CinemaHUDMobile*.ipa)
-          if (( ${#IPA_FILES[@]} == 0 )); then
-            echo "没有找到可发布的 IPA 文件。"
+          RELEASE_ASSETS=(CinemaHUDMobile*.ipa build/*.dmg)
+          if [[ -z "$RELEASE_TAG_INPUT" && "$GITHUB_REF" == refs/tags/* ]]; then
+            RELEASE_TAG_INPUT="$GITHUB_REF_NAME"
+          fi
+          if [[ -z "$RELEASE_TAG_INPUT" ]]; then
+            echo "未指定 Release 标签，跳过发布。"
+            exit 0
+          fi
+          if (( ${#RELEASE_ASSETS[@]} == 0 )); then
+            echo "没有找到可发布的 IPA 或 DMG 文件。"
             exit 1
           fi
-          gh release create "$GITHUB_REF_NAME" "${IPA_FILES[@]}" \
-            --verify-tag \
-            --title "CinemaHUD $GITHUB_REF_NAME" \
-            --generate-notes
+          if gh release view "$RELEASE_TAG_INPUT" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG_INPUT" "${RELEASE_ASSETS[@]}" --clobber
+          else
+            gh release create "$RELEASE_TAG_INPUT" "${RELEASE_ASSETS[@]}" \
+              --verify-tag \
+              --title "CinemaHUD $RELEASE_TAG_INPUT" \
+              --generate-notes
+          fi

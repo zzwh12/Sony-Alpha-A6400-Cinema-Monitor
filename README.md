@@ -100,7 +100,7 @@ CinemaHUD 可从音频接口录制 WAV，并通过 MIDI 时间码和 MIDI 机器
 
 ## 使用 GitHub Actions 构建 iOS IPA
 
-在 GitHub 仓库的 **Actions** 页面运行“构建 iOS 安装包”，或推送到 `main` 分支。工作流会上传名为 `CinemaHUD-iOS-安装包` 的短期构建产物。发布版本时，推送 `v*` 标签（例如 `v2.4.1`）会触发构建，并在成功后自动创建 GitHub Release、附上 IPA 和生成版本说明。
+在 GitHub 仓库的 **Actions** 页面运行“构建 iOS 安装包”，或推送到 `main` 分支。工作流会编译 iOS IPA 和 macOS DMG，并上传名为 `CinemaHUD-iOS-安装包` 的短期构建产物。发布版本时，推送 `v*` 标签（例如 `v2.4.1`）会触发构建，并在成功后自动创建 GitHub Release、附上 IPA 与 DMG 并生成版本说明。也可在 Actions 手动运行时填写已有的 `release_tag`，将新构建的 IPA 与 DMG 上传到对应 Release。
 
 不设置签名密钥时，工作流会生成需要另行签名后才能安装的 IPA。若要自动导出 Ad Hoc 签名安装包，请在仓库的 Actions Secrets 中配置以下四项：
 
