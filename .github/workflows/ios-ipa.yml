@@ -8,7 +8,7 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -137,3 +137,20 @@ jobs:
           path: CinemaHUDMobile*.ipa
           if-no-files-found: error
           retention-days: 14
+
+      - name: 发布 GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          IPA_FILES=(CinemaHUDMobile*.ipa)
+          if (( ${#IPA_FILES[@]} == 0 )); then
+            echo "没有找到可发布的 IPA 文件。"
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" "${IPA_FILES[@]}" \
+            --verify-tag \
+            --title "CinemaHUD $GITHUB_REF_NAME" \
+            --generate-notes
