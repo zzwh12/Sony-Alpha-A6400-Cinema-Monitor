@@ -19,8 +19,8 @@ final class AssistControllerTests: XCTestCase {
         c.ingest(measurements: under(), state: state(), profile: .standard, projectFPS: 24, shootingMode: .video)
         XCTAssertTrue(c.lines.isEmpty)
         c.ingest(measurements: under(), state: state(), profile: .standard, projectFPS: 24, shootingMode: .video)
-        XCTAssertEqual(c.lines.map(\.text), ["FACE 1 STOP UNDER"])
-        XCTAssertEqual(c.fix(for: "face-under"), Fix(label: "EI 800 → 1600", command: .setISO("1600")))
+        XCTAssertEqual(c.lines.map(\.text), ["人脸曝光不足 1 档"])
+        XCTAssertEqual(c.fix(for: "face-under"), Fix(label: "感光度 800 → 1600", command: .setISO("1600")))
         XCTAssertTrue(c.visible)
     }
     func testPendingAFTracksAFocusFixAndClearsWhenTheFindingGoes() {

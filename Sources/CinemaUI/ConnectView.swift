@@ -18,14 +18,14 @@ public struct ConnectView: View {
     public var body: some View {
         VStack(spacing: 28) {
             VStack(spacing: 8) {
-                Text("CINEMA HUD").font(.system(size: 30, weight: .bold)).tracking(10).foregroundStyle(Theme.text)
-                Text("Remote monitor for the Sony α6400").font(.system(size: 13)).foregroundStyle(Theme.dim)
+                Text("电影监视器").font(.system(size: 30, weight: .bold)).tracking(5).foregroundStyle(Theme.text)
+                Text("Sony α6400 远程监视器").font(.system(size: 13)).foregroundStyle(Theme.dim)
             }
 
             AdaptiveStack(spacing: 16) {
                 #if !os(macOS)
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("MAC BRIDGE").font(Theme.label(11)).tracking(3).foregroundStyle(Theme.text)
+                    Text("Mac 桥接").font(Theme.label(11)).tracking(2).foregroundStyle(Theme.text)
                     Text("Connect the camera to a Mac running CinemaHUD by USB; the Mac shares it here over Wi-Fi with the same picture and controls.")
                         .font(.system(size: 12)).foregroundStyle(.white.opacity(0.85))
                     if bridgeHosts.isEmpty {
@@ -54,7 +54,7 @@ public struct ConnectView: View {
                 #endif
                 #if os(macOS)
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("USB").font(Theme.label(11)).tracking(3).foregroundStyle(Theme.text)
+                    Text("USB 连接").font(Theme.label(11)).tracking(2).foregroundStyle(Theme.text)
                     step(1, "On the camera: MENU → Setup → USB Connection → PC Remote.")
                     step(2, "Connect the USB cable, then click Connect USB.")
                     Button {
@@ -73,7 +73,7 @@ public struct ConnectView: View {
                 #endif
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("WI-FI").font(Theme.label(11)).tracking(3).foregroundStyle(Theme.text)
+                    Text("Wi-Fi 连接").font(Theme.label(11)).tracking(2).foregroundStyle(Theme.text)
                     step(1, "On the camera: MENU → Network → Ctrl w/ Smartphone → On, then Connection.")
                     step(2, "On this Mac: join the Wi-Fi named DIRECT-xxxx:ILCE-6400.")
                     HStack(spacing: 8) {
@@ -134,13 +134,13 @@ public struct ConnectView: View {
         switch session.phase {
         case .idle: Text("Not connected").foregroundStyle(Theme.dim)
         case .discovering: HStack { ProgressView().controlSize(.small); Text("Searching for camera…") }.foregroundStyle(Theme.dim)
-        case .connecting(let name): HStack { ProgressView().controlSize(.small); Text("Connecting to \(name)…") }.foregroundStyle(Theme.dim)
+        case .connecting(let name): HStack { ProgressView().controlSize(.small); Text("正在连接到 \(name)…") }.foregroundStyle(Theme.dim)
         case .live: Text("Connected").foregroundStyle(Theme.ok)
-        case .failed(let msg): Text(msg).foregroundStyle(Theme.rec).multilineTextAlignment(.center).frame(maxWidth: 520)
+        case .failed(let msg): Text(localizedCameraMessage(msg)).foregroundStyle(Theme.rec).multilineTextAlignment(.center).frame(maxWidth: 520)
         }
         #if os(macOS)
         if session.bridgeActive {
-            Text("Sharing to iPhone / iPad on this network (port \(session.bridgePort))").font(.system(size: 11)).foregroundStyle(Theme.dim)
+            Text("正在通过此网络共享给 iPhone / iPad（端口 \(session.bridgePort)）").font(.system(size: 11)).foregroundStyle(Theme.dim)
         }
         #endif
     }
@@ -149,7 +149,7 @@ public struct ConnectView: View {
         HStack(alignment: .top, spacing: 10) {
             Text("\(n)").font(Theme.mono(12, weight: .bold)).foregroundStyle(.black)
                 .frame(width: 20, height: 20).background(Theme.selection, in: Circle())
-            Text(text).font(.system(size: 13)).foregroundStyle(.white.opacity(0.85))
+            Text(LocalizedStringKey(text)).font(.system(size: 13)).foregroundStyle(.white.opacity(0.85))
         }
     }
 }
@@ -168,9 +168,9 @@ struct SyncTakesCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
-                Text("AFTER THE SHOOT").font(Theme.label(11)).tracking(3).foregroundStyle(Theme.text)
+                Text("拍摄完成后").font(Theme.label(11)).tracking(2).foregroundStyle(Theme.text)
                 Spacer()
-                Text(takeCount == 0 ? "No takes recorded today" : "\(takeCount) take\(takeCount == 1 ? "" : "s") recorded today")
+                Text(takeCount == 0 ? "今天还没有录音" : "今天已录制 \(takeCount) 段")
                     .font(.system(size: 11)).foregroundStyle(takeCount == 0 ? Theme.dim : Theme.ok)
             }
 
@@ -179,9 +179,9 @@ struct SyncTakesCard: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             AdaptiveStack(spacing: 20) {
-                syncStep(1, "Copy the card's clips to this Mac.")
-                syncStep(2, "Drop them on Sync Takes, then Sync All.")
-                syncStep(3, "Export, then File ▸ Import ▸ XML in Final Cut Pro.")
+                syncStep(1, "将存储卡中的视频片段复制到这台 Mac。")
+                syncStep(2, "将片段拖入“同步素材”，然后点按“全部同步”。")
+                syncStep(3, "导出后，在 Final Cut Pro 中选择“文件 ▸ 导入 ▸ XML”。")
             }
 
             HStack(spacing: 10) {

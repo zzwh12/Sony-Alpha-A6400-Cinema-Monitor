@@ -24,7 +24,7 @@ struct SheetChrome<Content: View>: View {
                 Form { content }
                     .scrollContentBackground(.hidden)
                     .background(Theme.field)
-                    .navigationTitle(title)
+                    .navigationTitle(LocalizedStringKey(title))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             }
@@ -38,7 +38,7 @@ struct SheetChrome<Content: View>: View {
 private struct SetOnCamera: View {
     let what: String
     var body: some View {
-        HStack { Text(what); Spacer(); Text("Set on camera").foregroundStyle(Theme.dim) }
+        HStack { Text(LocalizedStringKey(what)); Spacer(); Text("Set on camera").foregroundStyle(Theme.dim) }
     }
 }
 
@@ -84,7 +84,7 @@ struct FocusSheet: View {
             .buttonStyle(.bordered).disabled(!session.state.supports("actHalfPressShutter"))
     }
     private var focusStatus: some View {
-        HStack { FocusDot(status: session.state.focusStatus); Text(session.state.focusStatus ?? "").font(.footnote).foregroundStyle(Theme.dim) }
+        HStack { FocusDot(status: session.state.focusStatus); Text(localizedCameraValue(session.state.focusStatus ?? "")).font(.footnote).foregroundStyle(Theme.dim) }
     }
     var body: some View {
         @Bindable var ov = overlays
@@ -93,7 +93,7 @@ struct FocusSheet: View {
             Section("Autofocus") {
                 if !s.focusModeCandidates.isEmpty {
                     Picker("Mode", selection: Binding(get: { s.focusMode ?? "" }, set: { v in Task { await session.setFocusMode(v) } })) {
-                        ForEach(s.focusModeCandidates, id: \.self) { Text($0).tag($0) }
+                        ForEach(s.focusModeCandidates, id: \.self) { Text(localizedCameraValue($0)).tag($0) }
                     }
                     .pickerStyle(.segmented).disabled(!s.supports("setFocusMode"))
                 } else {
@@ -118,7 +118,7 @@ struct FocusSheet: View {
                             }
                         }
                         .padding(.horizontal, 12)
-                        Text("NEAR   ◀   FOCUS RING   ▶   FAR").font(.system(size: 9, weight: .bold)).tracking(1).foregroundStyle(Theme.dim).offset(y: 20)
+                        Text("近   ◀   对焦环   ▶   远").font(.system(size: 9, weight: .bold)).tracking(1).foregroundStyle(Theme.dim).offset(y: 20)
                     }
                     .contentShape(Rectangle())
                     .gesture(DragGesture(minimumDistance: 4).onChanged { g in
@@ -131,9 +131,9 @@ struct FocusSheet: View {
                             Button(label) { Task { await session.focusDrive(step) } }.buttonStyle(.bordered).frame(maxWidth: .infinity, minHeight: 40)
                         }
                     }
-                    Text("Works in MF / DMF. Larger arrows move further.").font(.footnote).foregroundStyle(Theme.dim)
+                    Text("适用于 MF / DMF。箭头越大，对焦步进越远。").font(.footnote).foregroundStyle(Theme.dim)
                 } else {
-                    Text("Manual focus drive needs USB or the Mac bridge; Sony's Wi-Fi remote API has no focus ring control.")
+                    Text("手动对焦需要 USB 或 Mac 桥接；Sony 的 Wi-Fi 遥控接口不支持控制对焦环。")
                         .font(.footnote).foregroundStyle(Theme.dim)
                 }
             }
@@ -144,7 +144,7 @@ struct FocusSheet: View {
                 Toggle("2× magnify", isOn: $ov.magnify)
                 Toggle("Sharpness meter", isOn: $ov.showSharpnessMeter)
                 HStack { Text("AF region sharpness"); Spacer(); SharpnessBar(ratio: liveSharpness) }
-                Text("The meter scores the AF region against the sharpest part of the frame. Tap the picture to move the region.")
+                Text("此指示器会将自动对焦区域与画面最清晰处进行比较。点按画面可移动对焦区域。")
                     .font(.footnote).foregroundStyle(Theme.dim)
             }
         }
@@ -159,14 +159,14 @@ struct ZoomSheet: View {
                 Section {
                     HStack { Spacer(); ZoomRocker(position: session.state.zoomPosition) { d, m in Task { await session.zoom(d, m) } }; Spacer() }
                         .padding(.vertical, 8)
-                    if let f = session.state.focalLengthMM { HStack { Text("Focal length"); Spacer(); Text(String(format: "%.0f mm", f)).foregroundStyle(Theme.dim) } }
-                    Text("Hold W or T to zoom, tap for one step.").font(.footnote).foregroundStyle(Theme.dim)
+                    if let f = session.state.focalLengthMM { HStack { Text("Focal length"); Spacer(); Text(String(format: "%.0f 毫米", f)).foregroundStyle(Theme.dim) } }
+                    Text("按住 W 或 T 连续变焦，点按可变更一步。").font(.footnote).foregroundStyle(Theme.dim)
                 }
             } else {
                 Section {
                     Text(session.transport == .wifi
-                         ? "The camera reports no power-zoom lens. Zoom works with power-zoom lenses such as the 16-50 mm PZ."
-                         : "Zoom control is only available over the camera's Wi-Fi connection with a power-zoom lens; the USB protocol has no zoom drive.")
+                         ? "相机未检测到电动变焦镜头。仅电动变焦镜头（如 16–50 毫米 PZ）支持变焦。"
+                         : "通过 Wi-Fi 控制变焦需要电动变焦镜头；USB 协议不支持变焦控制。")
                         .font(.footnote).foregroundStyle(Theme.dim)
                 }
             }
@@ -195,21 +195,21 @@ struct FormatSheet: View {
             Section("Movie") {
                 if session.movieFileFormatAvailable {
                     Picker("File format", selection: Binding(get: { s.movieFileFormat ?? "" }, set: { v in Task { await session.setMovieFileFormat(v) } })) {
-                        ForEach(s.movieFileFormatCandidates, id: \.self) { Text($0).tag($0) }
+                        ForEach(s.movieFileFormatCandidates, id: \.self) { Text(localizedCameraValue($0)).tag($0) }
                     }
                 } else {
                     SetOnCamera(what: "File format")
                 }
                 if session.movieQualityAvailable {
                     Picker("Quality", selection: Binding(get: { s.movieQuality ?? "" }, set: { v in Task { await session.setMovieQuality(v) } })) {
-                        ForEach(s.movieQualityCandidates, id: \.self) { Text($0).tag($0) }
+                        ForEach(s.movieQualityCandidates, id: \.self) { Text(localizedCameraValue($0)).tag($0) }
                     }
                 } else {
                     SetOnCamera(what: "Resolution / quality")
                 }
                 Text(session.transport == .wifi
-                     ? "Rows marked \"Set on camera\" are not exposed by this camera's remote API."
-                     : "The α6400's USB protocol does not expose movie format; change it on the body.")
+                     ? "标记为“请在相机上设置”的项目不支持通过相机遥控接口更改。"
+                     : "α6400 的 USB 协议不支持更改视频格式，请直接在相机上设置。")
                     .font(.footnote).foregroundStyle(Theme.dim)
             }
             Section("Monitor") {

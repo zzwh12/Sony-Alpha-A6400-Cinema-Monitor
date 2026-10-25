@@ -113,13 +113,13 @@ public struct MobileCameraView: View {
         .environment(\.hudTouch, true)
         .environment(\.hudPick, { label in
             switch label {
-            case "FPS": toggle(.fps)
-            case "SHUTTER": toggle(.shutter)
-            case "IRIS": toggle(.iris)
-            case "EI": toggle(.iso)
-            case "EV": toggle(.ev)
-            case "WB": toggle(.wb)
-            case "FOCUS": toggle(.focus)
+            case "帧率": toggle(.fps)
+            case "快门": toggle(.shutter)
+            case "光圈": toggle(.iris)
+            case "感光度": toggle(.iso)
+            case "曝光": toggle(.ev)
+            case "白平衡": toggle(.wb)
+            case "对焦": toggle(.focus)
             default: break
             }
         })
@@ -189,14 +189,14 @@ public struct MobileCameraView: View {
             if let h = hint { Text(h).font(.system(size: 11)).foregroundStyle(Theme.warn).lineLimit(1).minimumScaleFactor(0.7) }
             Spacer(minLength: 4)
             if s.isRecording {
-                HStack(spacing: 5) { Circle().fill(Theme.rec).frame(width: 9, height: 9); Text("REC " + duration(s.recordingTimeSeconds)).font(Theme.strip(13)).foregroundStyle(Theme.rec) }
+                HStack(spacing: 5) { Circle().fill(Theme.rec).frame(width: 9, height: 9); Text("录制 " + duration(s.recordingTimeSeconds)).font(Theme.strip(13)).foregroundStyle(Theme.rec) }
             } else if let t = session.transport {
-                Text(t.rawValue.uppercased()).font(Theme.label(10)).foregroundStyle(Theme.dim)
+                Text(localizedCameraValue(t.rawValue.uppercased())).font(Theme.label(10)).foregroundStyle(Theme.dim)
             }
-            if let m = s.recordableMinutes { Text(String(format: "%d:%02d h", m / 60, m % 60)).font(Theme.mono(11)).foregroundStyle(Theme.dim) }
+            if let m = s.recordableMinutes { Text(String(format: "%d小时%02d分", m / 60, m % 60)).font(Theme.mono(11)).foregroundStyle(Theme.dim) }
             else if let n = s.shotsRemaining { Text("[ \(n) ]").font(Theme.mono(11)).foregroundStyle(Theme.dim) }
             if let b = s.battery { Text("\(Int(b.fraction * 100))%").font(Theme.mono(11)).foregroundStyle(b.fraction < 0.15 ? Theme.rec : Theme.dim) }
-            if let e = session.lastError { Text(e).font(.system(size: 10)).foregroundStyle(Theme.warn).lineLimit(1).frame(maxWidth: 160) }
+            if let e = session.lastError { Text(localizedCameraMessage(e)).font(.system(size: 10)).foregroundStyle(Theme.warn).lineLimit(1).frame(maxWidth: 160) }
         }
         .padding(.horizontal, 12).frame(maxWidth: .infinity).frame(height: 40)
         .clipped()
@@ -212,26 +212,26 @@ public struct MobileCameraView: View {
     private var exposureRow: some View {
         let s = session.state
         return HStack(spacing: 2) {
-            MobileReadout(label: "SHUTTER", value: s.shutterSpeed ?? "--", enabled: s.supports("setShutterSpeed"),
+            MobileReadout(label: "快门", value: s.shutterSpeed ?? "--", enabled: s.supports("setShutterSpeed"),
                           onStep: { d in Task { await session.step(s.shutterSpeedCandidates, current: s.shutterSpeed, by: d) { await session.setShutterSpeed($0) } } },
                           onTap: { sheet = .shutter })
-            MobileReadout(label: "IRIS", value: s.fNumber.map { "F" + $0 } ?? "--", enabled: s.supports("setFNumber"),
+            MobileReadout(label: "光圈", value: s.fNumber.map { "F" + $0 } ?? "--", enabled: s.supports("setFNumber"),
                           onStep: { d in Task { await session.step(s.fNumberCandidates, current: s.fNumber, by: d) { await session.setFNumber($0) } } },
                           onTap: { sheet = .iris })
-            MobileReadout(label: "ISO", value: s.iso ?? "--", enabled: s.supports("setIsoSpeedRate"),
+            MobileReadout(label: "感光度", value: s.iso ?? "--", enabled: s.supports("setIsoSpeedRate"),
                           onStep: { d in Task { await session.step(s.isoCandidates, current: s.iso, by: d) { await session.setISO($0) } } },
                           onTap: { sheet = .iso })
-            MobileReadout(label: "EV", value: s.exposureCompensation?.label ?? "--", enabled: s.supports("setExposureCompensation") && s.exposureCompensation != nil,
+            MobileReadout(label: "曝光补偿", value: s.exposureCompensation?.label ?? "--", enabled: s.supports("setExposureCompensation") && s.exposureCompensation != nil,
                           accent: (s.exposureCompensation?.index ?? 0) == 0 ? Theme.text : Theme.accent,
                           onStep: { d in Task { await session.stepExposureCompensation(d) } },
                           onTap: { sheet = .ev })
-            MobileReadout(label: "WB", value: wbValue(s), enabled: s.supports("setWhiteBalance"),
+            MobileReadout(label: "白平衡", value: wbValue(s), enabled: s.supports("setWhiteBalance"),
                           onStep: { d in
                               guard s.whiteBalanceMode == "Color Temperature", let k = s.colorTemperature else { return }
                               Task { await session.setWhiteBalance(mode: "Color Temperature", colorTemp: max(2500, min(9900, k + d * 100))) }
                           },
                           onTap: { sheet = .wb })
-            MobileReadout(label: "FOCUS", value: s.focusMode ?? "--", enabled: true,
+            MobileReadout(label: "对焦", value: localizedCameraValue(s.focusMode ?? "--"), enabled: true,
                           accent: s.focusStatus == "Focused" ? Theme.ok : (s.focusStatus == "Failed" ? Theme.rec : Theme.text),
                           onTap: { sheet = .focus })
         }
@@ -240,16 +240,16 @@ public struct MobileCameraView: View {
     private var leftRail: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 6) {
-                MobileToolButton(icon: "grid", label: "GUIDES", active: sheet == .guides || overlays.grid || overlays.frameGuides || overlays.safeAreas || overlays.diagonals) { toggle(.guides) }
-                MobileToolButton(icon: "waveform.path.ecg", label: "PEAK", active: overlays.peaking) { overlays.peaking.toggle() }
-                MobileToolButton(icon: "line.diagonal", label: "ZEBRA", active: overlays.zebra) { overlays.zebra.toggle() }
+                MobileToolButton(icon: "grid", label: "辅助线", active: sheet == .guides || overlays.grid || overlays.frameGuides || overlays.safeAreas || overlays.diagonals) { toggle(.guides) }
+                MobileToolButton(icon: "waveform.path.ecg", label: "峰值", active: overlays.peaking) { overlays.peaking.toggle() }
+                MobileToolButton(icon: "line.diagonal", label: "斑马", active: overlays.zebra) { overlays.zebra.toggle() }
                 MobileToolButton(icon: "plus.magnifyingglass", label: "2×", active: overlays.magnify) { overlays.magnify.toggle() }
                 MobileToolButton(icon: "circle.lefthalf.filled", label: overlays.lutOn ? "709" : "LOG", active: overlays.lutOn && (overlays.profile.isLog || overlays.customLUT != nil),
                                  enabled: overlays.profile.isLog || overlays.customLUT != nil) { overlays.lutOn.toggle() }
-                MobileToolButton(icon: "chart.bar.xaxis", label: overlays.scope == .none ? "SCOPE" : overlays.scope.rawValue, active: overlays.scope != .none) { overlays.scope = overlays.scope.next }
-                MobileToolButton(icon: "square.and.arrow.down", label: "FORMAT", active: sheet == .format) { toggle(.format) }
+                MobileToolButton(icon: "chart.bar.xaxis", label: overlays.scope.title, active: overlays.scope != .none) { overlays.scope = overlays.scope.next }
+                MobileToolButton(icon: "square.and.arrow.down", label: "格式", active: sheet == .format) { toggle(.format) }
                 Spacer(minLength: 0)
-                MobileToolButton(icon: "gearshape", label: "SETUP") { sheet = .settings }
+                MobileToolButton(icon: "gearshape", label: "设置") { sheet = .settings }
             }
             .padding(.vertical, 8)
         }
@@ -261,12 +261,12 @@ public struct MobileCameraView: View {
         let s = session.state
         return ScrollView(showsIndicators: false) {
             VStack(spacing: 6) {
-                MobileToolButton(icon: "scope", label: "AF", enabled: s.supports("actHalfPressShutter")) { Task { await session.autofocus() } }
-                MobileToolButton(icon: "lock", label: "AEL") { Task { await session.press(.aeLock) } }
-                MobileToolButton(icon: "camera.aperture", label: "FOCUS", active: sheet == .focus || overlays.peaking) { toggle(.focus) }
-                MobileToolButton(icon: "arrow.up.left.and.arrow.down.right", label: "ZOOM", active: sheet == .zoom) { toggle(.zoom) }
+                MobileToolButton(icon: "scope", label: "对焦", enabled: s.supports("actHalfPressShutter")) { Task { await session.autofocus() } }
+                MobileToolButton(icon: "lock", label: "曝光锁") { Task { await session.press(.aeLock) } }
+                MobileToolButton(icon: "camera.aperture", label: "对焦", active: sheet == .focus || overlays.peaking) { toggle(.focus) }
+                MobileToolButton(icon: "arrow.up.left.and.arrow.down.right", label: "变焦", active: sheet == .zoom) { toggle(.zoom) }
                 if overlays.shootingMode == .video {
-                    MobileToolButton(icon: "camera", label: "STILL", enabled: s.supports("actTakePicture")) { Task { await session.takePicture() } }
+                    MobileToolButton(icon: "camera", label: "拍照", enabled: s.supports("actTakePicture")) { Task { await session.takePicture() } }
                 }
                 Spacer(minLength: 0)
                 primaryButton
@@ -281,19 +281,19 @@ public struct MobileCameraView: View {
         let s = session.state
         return VStack(spacing: 8) {
             HStack(spacing: 8) {
-                MobileToolButton(icon: "grid", label: "GUIDES", active: overlays.grid || overlays.frameGuides || overlays.safeAreas || overlays.diagonals) { sheet = .guides }
-                MobileToolButton(icon: "waveform.path.ecg", label: "PEAK", active: overlays.peaking) { overlays.peaking.toggle() }
-                MobileToolButton(icon: "line.diagonal", label: "ZEBRA", active: overlays.zebra) { overlays.zebra.toggle() }
+                MobileToolButton(icon: "grid", label: "辅助线", active: overlays.grid || overlays.frameGuides || overlays.safeAreas || overlays.diagonals) { sheet = .guides }
+                MobileToolButton(icon: "waveform.path.ecg", label: "峰值", active: overlays.peaking) { overlays.peaking.toggle() }
+                MobileToolButton(icon: "line.diagonal", label: "斑马", active: overlays.zebra) { overlays.zebra.toggle() }
                 MobileToolButton(icon: "plus.magnifyingglass", label: "2×", active: overlays.magnify) { overlays.magnify.toggle() }
-                MobileToolButton(icon: "chart.bar.xaxis", label: overlays.scope == .none ? "SCOPE" : overlays.scope.rawValue, active: overlays.scope != .none) { overlays.scope = overlays.scope.next }
+                MobileToolButton(icon: "chart.bar.xaxis", label: overlays.scope.title, active: overlays.scope != .none) { overlays.scope = overlays.scope.next }
             }
             HStack(spacing: 8) {
-                MobileToolButton(icon: "camera.aperture", label: "FOCUS") { sheet = .focus }
-                MobileToolButton(icon: "arrow.up.left.and.arrow.down.right", label: "ZOOM") { sheet = .zoom }
-                MobileToolButton(icon: "square.and.arrow.down", label: "FORMAT") { sheet = .format }
-                MobileToolButton(icon: "lock", label: "AEL") { Task { await session.press(.aeLock) } }
+                MobileToolButton(icon: "camera.aperture", label: "对焦") { sheet = .focus }
+                MobileToolButton(icon: "arrow.up.left.and.arrow.down.right", label: "变焦") { sheet = .zoom }
+                MobileToolButton(icon: "square.and.arrow.down", label: "格式") { sheet = .format }
+                MobileToolButton(icon: "lock", label: "曝光锁") { Task { await session.press(.aeLock) } }
                 if overlays.shootingMode == .video {
-                    MobileToolButton(icon: "camera", label: "STILL", enabled: s.supports("actTakePicture")) { Task { await session.takePicture() } }
+                    MobileToolButton(icon: "camera", label: "拍照", enabled: s.supports("actTakePicture")) { Task { await session.takePicture() } }
                 } else {
                     MobileToolButton(icon: "circle.lefthalf.filled", label: overlays.lutOn ? "709" : "LOG", enabled: overlays.profile.isLog || overlays.customLUT != nil) { overlays.lutOn.toggle() }
                 }
@@ -350,7 +350,7 @@ public struct MobileCameraView: View {
                         .position(x: rect.midX, y: rect.midY)
                         .clipShape(Rectangle().path(in: rect))
                 } else {
-                    VStack(spacing: 8) { ProgressView(); Text("WAITING FOR LIVE VIEW").font(Theme.label(11)).tracking(3).foregroundStyle(Theme.dim) }
+                    VStack(spacing: 8) { ProgressView(); Text("正在等待实时画面").font(Theme.label(11)).tracking(3).foregroundStyle(Theme.dim) }
                 }
                 FrameOverlays(rect: rect)
                 if s.isRecording {
@@ -406,7 +406,7 @@ public struct MobileCameraView: View {
             overlays.modeResolver.toggle()
             let dial = ShootingModeResolver.mode(forDial: session.state.shootMode)
             if let dial, dial != mode {
-                hint = mode == .photo ? "Turn the dial to a stills position" : "Turn the dial to the movie position"
+                hint = mode == .photo ? "请将模式转盘转到照片模式" : "请将模式转盘转到视频模式"
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) { hint = nil }
             }
         }
@@ -436,7 +436,7 @@ public struct MobileCameraView: View {
         case .iris: MobileCandidateSheet(title: "Iris", current: s.fNumber ?? "", candidates: s.fNumberCandidates, format: { "F" + $0 }) { v in Task { await session.setFNumber(v) } }
         case .iso: MobileCandidateSheet(title: "EI", current: s.iso ?? "", candidates: s.isoCandidates) { v in Task { await session.setISO(v) } }
         case .fps:
-            MobileCandidateSheet(title: "FPS", current: String(overlays.projectFPS), candidates: ["24", "25", "30", "48", "50", "60"], format: { $0 + ".000" }) { v in
+            MobileCandidateSheet(title: "帧率", current: String(overlays.projectFPS), candidates: ["24", "25", "30", "48", "50", "60"], format: { $0 + ".000" }) { v in
                 if let f = Int(v) { overlays.projectFPS = f }
             }
         case .ev:
@@ -466,7 +466,7 @@ public struct MobileCameraView: View {
     private func wbValue(_ s: CameraState) -> String {
         if s.whiteBalanceMode == "Color Temperature", let k = s.colorTemperature { return "\(k)K" }
         guard let m = s.whiteBalanceMode else { return "--" }
-        return m == "Auto WB" ? "AWB" : String(m.prefix(7)).uppercased()
+        return m == "Auto WB" ? "自动" : localizedCameraValue(m)
     }
 
     private func duration(_ secs: Int) -> String { String(format: "%02d:%02d:%02d", secs / 3600, secs / 60 % 60, secs % 60) }

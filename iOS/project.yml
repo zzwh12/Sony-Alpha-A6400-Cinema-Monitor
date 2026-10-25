@@ -22,6 +22,8 @@ targets:
       path: CinemaHUDMobile/Info.plist
       properties:
         CFBundleDisplayName: CinemaHUD
+        CFBundleDevelopmentRegion: zh-Hans
+        CFBundleLocalizations: [zh-Hans]
         CFBundleShortVersionString: "2.4.1"
         CFBundleVersion: "8"
         UILaunchScreen:
@@ -31,7 +33,7 @@ targets:
         UIStatusBarHidden: true
         UIViewControllerBasedStatusBarAppearance: false
         UIRequiresFullScreen: false
-        NSLocalNetworkUsageDescription: "CinemaHUD finds and controls your Sony camera, or a Mac running CinemaHUD, on the local network."
+        NSLocalNetworkUsageDescription: "CinemaHUD 可在本地网络中搜索并控制 Sony 相机或运行 CinemaHUD 的 Mac。"
         NSBonjourServices: ["_cinemahud._tcp"]
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true

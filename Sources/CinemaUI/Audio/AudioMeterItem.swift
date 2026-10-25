@@ -16,7 +16,7 @@ struct AudioMeterItem: View {
     var body: some View {
         if let audio, audio.isArmed || audio.interruption != nil {
             HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text("AUDIO").font(Theme.label(9)).tracking(1.2).foregroundStyle(Theme.dim)
+                Text("音频").font(Theme.label(9)).tracking(1.2).foregroundStyle(Theme.dim)
                 if audio.isArmed {
                     Text(audio.selectedDevice?.shortName ?? audio.meters.deviceName.uppercased()).font(Theme.strip(13)).foregroundStyle(Theme.text)
                     Text("\(Int(audio.meters.sampleRate / 1000))k").font(Theme.label(9)).foregroundStyle(Theme.dim)
@@ -26,11 +26,11 @@ struct AudioMeterItem: View {
                     if audio.currentTake != nil { Text("●").font(Theme.label(9)).foregroundStyle(Theme.rec) }
                     if audio.transportRunning { Text("MTC \(audio.mtcRate.framesPerSecond)").font(Theme.label(9)).foregroundStyle(Theme.accent) }
                 } else {
-                    Text("AUDIO LOST").font(Theme.strip(13)).foregroundStyle(Theme.warn)
+                    Text("音频中断").font(Theme.strip(13)).foregroundStyle(Theme.warn)
                 }
             }
             .padding(.horizontal, 10)
-            .help(audio.interruption ?? "Audio interface armed")
+            .help(audio.interruption ?? "音频接口已启用")
         }
     }
 }
@@ -46,7 +46,7 @@ struct MeterBar: View {
             Rectangle().fill(channel.clipped ? Color.white : Theme.text).frame(width: 1).offset(x: max(0, width * MeterScale.fraction(channel.hold) - 1))
         }
         .frame(width: width, height: height)
-        .accessibilityLabel("Audio level \(Int(channel.rms)) dBFS")
+        .accessibilityLabel("音频电平 \(Int(channel.rms)) dBFS")
     }
 }
 
@@ -58,7 +58,7 @@ struct AudioSettingsSection: View {
         if let audio {
             @Bindable var a = audio
             VStack(alignment: .leading, spacing: 6) {
-                Text("AUDIO").font(Theme.label()).tracking(1.6).foregroundStyle(Theme.accent).padding(.horizontal, 12)
+                Text("音频").font(Theme.label()).tracking(1.6).foregroundStyle(Theme.accent).padding(.horizontal, 12)
                 HStack {
                     Text("Input").font(.system(size: 12)).foregroundStyle(Theme.text)
                     Spacer()

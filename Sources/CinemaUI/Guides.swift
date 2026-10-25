@@ -20,7 +20,7 @@ public enum FrameGuideRatio: String, CaseIterable, Identifiable, Sendable {
 
 /// Focus peaking tint.
 public enum PeakingColor: String, CaseIterable, Identifiable, Sendable {
-    case red = "Red", yellow = "Yellow", white = "White", blue = "Blue"
+    case red = "红色", yellow = "黄色", white = "白色", blue = "蓝色"
     public var id: String { rawValue }
     public var rgb: (Double, Double, Double) {
         switch self {

@@ -45,7 +45,7 @@ struct StripReadout: View {
                 else if enabled && !candidates.isEmpty { showPicker.toggle() }
             } label: {
                 HStack(alignment: .firstTextBaseline, spacing: touch ? 4 : 5) {
-                    Text(label).font(Theme.label(touch ? 8.5 : 9)).tracking(1.2).foregroundStyle(hover && enabled ? Theme.accent : Theme.dim)
+                    Text(localizedHUDLabel(label)).font(Theme.label(touch ? 8.5 : 9)).tracking(0.8).foregroundStyle(hover && enabled ? Theme.accent : Theme.dim)
                     Text(value).font(Theme.strip(touch ? 15 : 17)).foregroundStyle(enabled ? accent : Theme.faint)
                     if !suffix.isEmpty { Text(suffix).font(Theme.strip(touch ? 11 : 12)).foregroundStyle(Theme.dim) }
                 }
@@ -114,7 +114,7 @@ struct TopStrip: View {
             exposureReadouts(first: false)
             Spacer(minLength: 4)
             if let err = session.lastError {
-                Text(err).font(Theme.mono(10)).foregroundStyle(Theme.warn).lineLimit(1).frame(maxWidth: 320).padding(.horizontal, 6)
+                Text(localizedCameraMessage(err)).font(Theme.mono(10)).foregroundStyle(Theme.warn).lineLimit(1).frame(maxWidth: 320).padding(.horizontal, 6)
             }
             badges
         }
@@ -137,30 +137,30 @@ struct TopStrip: View {
         let s = session.state
         let fpsChoices = ["24", "25", "30", "48", "50", "60"]
         if first {
-            StripReadout(label: "FPS", value: String(format: "%d.000", overlays.projectFPS), candidates: fpsChoices,
+            StripReadout(label: "帧率", value: String(format: "%d.000", overlays.projectFPS), candidates: fpsChoices,
                          onSelect: { v in if let f = Int(v) { ov.projectFPS = f } },
                          onStep: { d in if let i = fpsChoices.firstIndex(of: "\(ov.projectFPS)") { ov.projectFPS = Int(fpsChoices[max(0, min(fpsChoices.count - 1, i + d))])! } })
-            StripReadout(label: "SHUTTER", value: shutterAngle(s.shutterSpeed, fps: overlays.projectFPS), suffix: s.shutterSpeed ?? "",
+            StripReadout(label: "快门", value: shutterAngle(s.shutterSpeed, fps: overlays.projectFPS), suffix: s.shutterSpeed ?? "",
                          candidates: s.shutterSpeedCandidates, enabled: s.supports("setShutterSpeed"), currentRaw: s.shutterSpeed,
                          format: { "\(shutterAngle($0, fps: overlays.projectFPS))   \($0)" },
                          onSelect: { v in Task { await session.setShutterSpeed(v) } },
                          onStep: { d in Task { await session.step(s.shutterSpeedCandidates, current: s.shutterSpeed, by: d) { await session.setShutterSpeed($0) } } })
-            StripReadout(label: "IRIS", value: s.fNumber.map { "F " + $0 } ?? "--", candidates: s.fNumberCandidates,
+            StripReadout(label: "光圈", value: s.fNumber.map { "F " + $0 } ?? "--", candidates: s.fNumberCandidates,
                          enabled: s.supports("setFNumber"), format: { "F " + $0 },
                          onSelect: { v in Task { await session.setFNumber(v) } },
                          onStep: { d in Task { await session.step(s.fNumberCandidates, current: s.fNumber, by: d) { await session.setFNumber($0) } } })
-            StripReadout(label: "EI", value: s.iso ?? "--", candidates: s.isoCandidates, enabled: s.supports("setIsoSpeedRate"),
+            StripReadout(label: "ISO", value: s.iso ?? "--", candidates: s.isoCandidates, enabled: s.supports("setIsoSpeedRate"),
                          onSelect: { v in Task { await session.setISO(v) } },
                          onStep: { d in Task { await session.step(s.isoCandidates, current: s.iso, by: d) { await session.setISO($0) } } })
         } else {
-            StripReadout(label: "EV", value: s.exposureCompensation?.label ?? "--",
+            StripReadout(label: "曝光", value: s.exposureCompensation?.label ?? "--",
                          candidates: evCandidates(s.exposureCompensation),
                          enabled: s.supports("setExposureCompensation") && s.exposureCompensation != nil,
                          accent: (s.exposureCompensation?.index ?? 0) == 0 ? Theme.text : Theme.accent,
                          format: { String($0.split(separator: "|").first ?? "") },
                          onSelect: { v in if let i = Int(v.split(separator: "|").last ?? "") { Task { await session.setExposureCompensation(index: i) } } },
                          onStep: { d in Task { await session.stepExposureCompensation(d) } })
-            StripReadout(label: "WB", value: wbValue(s), suffix: ccText(s), candidates: wbCandidates(s),
+            StripReadout(label: "白平衡", value: wbValue(s), suffix: ccText(s), candidates: wbCandidates(s),
                          enabled: s.supports("setWhiteBalance"), format: wbFormat,
                          onSelect: { v in
                              if let k = Int(v) { Task { await session.setWhiteBalance(mode: "Color Temperature", colorTemp: k) } }
@@ -170,7 +170,7 @@ struct TopStrip: View {
                              guard s.whiteBalanceMode == "Color Temperature", let k = s.colorTemperature else { return }
                              Task { await session.setWhiteBalance(mode: "Color Temperature", colorTemp: max(2500, min(9900, k + d * 100))) }
                          })
-            StripReadout(label: "FOCUS", value: s.focusMode ?? "--", candidates: s.focusModeCandidates, enabled: s.supports("setFocusMode"),
+            StripReadout(label: "对焦", value: localizedCameraValue(s.focusMode ?? "--"), candidates: s.focusModeCandidates, enabled: s.supports("setFocusMode"),
                          accent: s.focusStatus == "Focused" ? Theme.ok : (s.focusStatus == "Failed" ? Theme.rec : Theme.text),
                          onSelect: { v in Task { await session.setFocusMode(v) } },
                          onStep: { d in Task { await session.step(s.focusModeCandidates, current: s.focusMode, by: d) { await session.setFocusMode($0) } } })
@@ -199,18 +199,18 @@ struct TopStrip: View {
     private func wbFormat(_ v: String) -> String {
         if Int(v) != nil { return v + " K" }
         switch v {
-        case "Auto WB": return "AWB"
-        case "Daylight": return "DAY"
-        case "Shade": return "SHADE"
-        case "Cloudy": return "CLOUD"
-        case "Incandescent": return "TUNG"
-        case "Fluorescent: Warm White (-1)": return "FL -1"
-        case "Fluorescent: Cool White (0)": return "FL 0"
-        case "Fluorescent: Day White (+1)": return "FL +1"
-        case "Fluorescent: Daylight (+2)": return "FL +2"
-        case "Flash": return "FLASH"
-        case "Color Temperature": return "KELVIN"
-        case "Underwater Auto": return "UW"
+        case "Auto WB": return "自动"
+        case "Daylight": return "日光"
+        case "Shade": return "阴影"
+        case "Cloudy": return "阴天"
+        case "Incandescent": return "白炽灯"
+        case "Fluorescent: Warm White (-1)": return "暖白 -1"
+        case "Fluorescent: Cool White (0)": return "冷白 0"
+        case "Fluorescent: Day White (+1)": return "日光白 +1"
+        case "Fluorescent: Daylight (+2)": return "日光 +2"
+        case "Flash": return "闪光灯"
+        case "Color Temperature": return "色温"
+        case "Underwater Auto": return "水下自动"
         default: return v.uppercased()
         }
     }
@@ -224,12 +224,12 @@ struct TopStrip: View {
     }
     private func modeShort(_ mode: String?) -> String {
         switch mode {
-        case "Manual", "Movie M": return "M"
-        case "Aperture", "Movie A": return "A"
-        case "Shutter", "Movie S": return "S"
-        case "Program Auto", "Movie P": return "P"
-        case "Intelligent Auto", "Movie Auto": return "AUTO"
-        case "Superior Auto": return "AUTO+"
+        case "Manual", "Movie M": return "手动"
+        case "Aperture", "Movie A": return "光圈优先"
+        case "Shutter", "Movie S": return "快门优先"
+        case "Program Auto", "Movie P": return "程序自动"
+        case "Intelligent Auto", "Movie Auto": return "智能自动"
+        case "Superior Auto": return "增强自动"
         case nil: return "--"
         default: return mode!.uppercased()
         }
@@ -258,7 +258,7 @@ struct BottomStrip: View {
         let rec = session.state.isRecording
         return HStack(spacing: 7) {
             Circle().fill(rec ? Theme.rec : Theme.ok).frame(width: 9, height: 9)
-            Text(rec ? "REC" : "STBY").font(Theme.strip(13)).foregroundStyle(rec ? Theme.rec : Theme.ok)
+            Text(rec ? "录制" : "待机").font(Theme.strip(13)).foregroundStyle(rec ? Theme.rec : Theme.ok)
             if rec { Text(duration(session.state.recordingTimeSeconds)).font(Theme.strip(13)).foregroundStyle(Theme.rec) }
         }
         .padding(.horizontal, 10)
@@ -268,8 +268,8 @@ struct BottomStrip: View {
         let s = session.state
         let rec = s.isRecording
         return HStack(spacing: 0) {
-            item("FCL", s.focalLengthMM.map { String(format: "%.1fmm", $0) } ?? "--")
-            item("PWR", s.battery.map { "\(Int($0.fraction * 100))%" } ?? "--",
+            item("焦距", s.focalLengthMM.map { String(format: "%.1fmm", $0) } ?? "--")
+            item("电量", s.battery.map { "\(Int($0.fraction * 100))%" } ?? "--",
                  tint: (s.battery?.fraction ?? 1) < 0.15 ? Theme.rec : Theme.text)
             item(nil, String(format: "%@_%04d  C%03d", overlays.cameraIndex, overlays.reel, max(1, session.takes + (rec ? 0 : 1))))
         }
@@ -282,22 +282,22 @@ struct BottomStrip: View {
             #if os(macOS)
             AudioMeterItem()
             #endif
-            if let m = s.recordableMinutes { item("MEDIA", String(format: "%d:%02d h", m / 60, m % 60)) }
-            else if let n = s.shotsRemaining { item("MEDIA", "\(n)") }
-            else { item("MEDIA", "--") }
+            if let m = s.recordableMinutes { item("剩余", String(format: "%d:%02d 小时", m / 60, m % 60)) }
+            else if let n = s.shotsRemaining { item("剩余", "\(n) 张") }
+            else { item("剩余", "--") }
             TimelineView(.periodic(from: .now, by: 1.0 / Double(overlays.projectFPS))) { ctx in
-                item("TC", timecode(ctx.date, fps: overlays.projectFPS), tint: rec ? Theme.rec : Theme.text)
+                item("时间码", timecode(ctx.date, fps: overlays.projectFPS), tint: rec ? Theme.rec : Theme.text)
             }
             HStack(spacing: 8) {
-                if pictureIsUntouched { Text("NATIVE").font(Theme.label(9)).foregroundStyle(Theme.ok) }
+                if pictureIsUntouched { Text("原始").font(Theme.label(9)).foregroundStyle(Theme.ok) }
                 Text(overlays.feedColorSpace.short).font(Theme.label(9)).foregroundStyle(Theme.dim)
-                if overlays.detail && overlays.enhanced { Text("DETAIL").font(Theme.label(9)).foregroundStyle(Theme.accent) }
-                if let t = session.transport { Text(t.rawValue.uppercased()).font(Theme.label(9)).foregroundStyle(Theme.dim) }
-                Text(String(format: "%.0f FPS", session.fps)).font(Theme.label(9)).foregroundStyle(Theme.dim)
+                if overlays.detail && overlays.enhanced { Text("细节增强").font(Theme.label(9)).foregroundStyle(Theme.accent) }
+                if let t = session.transport { Text(localizedCameraValue(t.rawValue.uppercased())).font(Theme.label(9)).foregroundStyle(Theme.dim) }
+                Text(String(format: "帧率 %.0f fps", session.fps)).font(Theme.label(9)).foregroundStyle(Theme.dim)
                 if session.motionFactor > 1 { Text("×\(session.motionFactor) +\(Int(1000.0 / max(1, session.sourceFPS)))ms").font(Theme.label(9)).foregroundStyle(Theme.accent) }
-                if session.denoise > 0 { Text(session.denoise > 0.6 ? "NR2" : "NR1").font(Theme.label(9)).foregroundStyle(Theme.accent) }
-                if overlays.mist > 0 { Text(overlays.mist > 0.6 ? "MIST2" : "MIST1").font(Theme.label(9)).foregroundStyle(Theme.accent) }
-                if session.bridgeActive { Text("BRIDGE").font(Theme.label(9)).foregroundStyle(Theme.ok) }
+                if session.denoise > 0 { Text(session.denoise > 0.6 ? "降噪 2" : "降噪 1").font(Theme.label(9)).foregroundStyle(Theme.accent) }
+                if overlays.mist > 0 { Text(overlays.mist > 0.6 ? "柔光 2" : "柔光 1").font(Theme.label(9)).foregroundStyle(Theme.accent) }
+                if session.bridgeActive { Text("桥接").font(Theme.label(9)).foregroundStyle(Theme.ok) }
             }
             .padding(.trailing, 10)
         }
@@ -366,18 +366,18 @@ struct LeftTools: View {
             }
             EdgeButton(title: overlays.lutOn ? (overlays.customLUT != nil ? "LUT" : "709") : "LOG", active: overlays.lutOn && (overlays.profile.isLog || overlays.customLUT != nil),
                        enabled: overlays.profile.isLog || overlays.customLUT != nil) { ov.lutOn.toggle() }
-            EdgeButton(title: "EXP", active: overlays.falseColor) { ov.falseColor.toggle() }
-            EdgeButton(title: "PEAK", active: overlays.peaking) { ov.peaking.toggle() }
-            EdgeButton(title: "ZEBRA", active: overlays.zebra) { ov.zebra.toggle() }
+            EdgeButton(title: "伪色", active: overlays.falseColor) { ov.falseColor.toggle() }
+            EdgeButton(title: "峰值", active: overlays.peaking) { ov.peaking.toggle() }
+            EdgeButton(title: "斑马", active: overlays.zebra) { ov.zebra.toggle() }
             EdgeButton(title: "2.00×", active: overlays.magnify) { ov.magnify.toggle() }
             Spacer().frame(height: touch ? 2 : 6)
-            EdgeButton(title: "FRAME", active: overlays.grid) { ov.grid.toggle() }
-            EdgeButton(title: "GUIDE", active: overlays.frameGuides) { if let route { route(.guides) } else { ov.frameGuides.toggle() } }
-            EdgeButton(title: overlays.crop == .native ? "CROP" : overlays.crop.label, active: overlays.crop != .native) { ov.crop = ov.crop.next }
-            if route == nil { EdgeButton(title: "ASSIST", active: overlays.assist) { ov.assist.toggle() } }
+            EdgeButton(title: "网格", active: overlays.grid) { ov.grid.toggle() }
+            EdgeButton(title: "构图", active: overlays.frameGuides) { if let route { route(.guides) } else { ov.frameGuides.toggle() } }
+            EdgeButton(title: overlays.crop == .native ? "裁切" : overlays.crop.label, active: overlays.crop != .native) { ov.crop = ov.crop.next }
+            if route == nil { EdgeButton(title: "辅助", active: overlays.assist) { ov.assist.toggle() } }
             Spacer(minLength: touch ? 6 : 0)
-            if let route { EdgeButton(title: "PHOTO") { route(.photo) } }
-            EdgeButton(title: "MENU", active: overlays.showMenu) { if let route { route(.menu) } else { ov.showMenu.toggle() } }
+            if let route { EdgeButton(title: "照片") { route(.photo) } }
+            EdgeButton(title: "菜单", active: overlays.showMenu) { if let route { route(.menu) } else { ov.showMenu.toggle() } }
         }
         .padding(.vertical, touch ? 2 : 8)
     }
@@ -397,32 +397,32 @@ struct RightTools: View {
         let s = session.state
         let canRec = s.supports("startMovieRec") || s.supports("stopMovieRec")
         return VStack(spacing: touch ? 2 : 5) {
-            EdgeButton(title: overlays.scope == .none ? "SCOPE" : overlays.scope.rawValue, active: overlays.scope != .none) { ov.scope = ov.scope.next }
-            EdgeButton(title: "ENH", active: overlays.enhanced) { ov.enhanced.toggle() }
-            EdgeButton(title: session.motionFactor > 1 ? "×\(session.motionFactor)" : "MOTION", active: session.motionFactor > 1) {
+            EdgeButton(title: overlays.scope.title, active: overlays.scope != .none) { ov.scope = ov.scope.next }
+            EdgeButton(title: "增强", active: overlays.enhanced) { ov.enhanced.toggle() }
+            EdgeButton(title: session.motionFactor > 1 ? "×\(session.motionFactor)" : "动态", active: session.motionFactor > 1) {
                 session.motionFactor = [1: 2, 2: 4, 4: 8][session.motionFactor] ?? 1
             }
-            EdgeButton(title: session.denoise > 0 ? (session.denoise > 0.6 ? "NR2" : "NR1") : "NR", active: session.denoise > 0) {
+            EdgeButton(title: session.denoise > 0 ? (session.denoise > 0.6 ? "降噪2" : "降噪1") : "降噪", active: session.denoise > 0) {
                 session.denoise = session.denoise == 0 ? 0.5 : (session.denoise > 0.6 ? 0 : 1)
             }
-            EdgeButton(title: overlays.mist > 0 ? (overlays.mist > 0.6 ? "MIST2" : "MIST1") : "MIST", active: overlays.mist > 0) {
+            EdgeButton(title: overlays.mist > 0 ? (overlays.mist > 0.6 ? "柔光2" : "柔光1") : "柔光", active: overlays.mist > 0) {
                 overlays.mist = overlays.mist == 0 ? 0.5 : (overlays.mist > 0.6 ? 0 : 1)
             }
             Spacer().frame(height: touch ? 2 : 6)
-            EdgeButton(title: "AF", enabled: s.supports("actHalfPressShutter")) { Task { await session.autofocus() } }
-            EdgeButton(title: "AEL") { Task { await session.press(.aeLock) } }
+            EdgeButton(title: "对焦", enabled: s.supports("actHalfPressShutter")) { Task { await session.autofocus() } }
+            EdgeButton(title: "曝光锁") { Task { await session.press(.aeLock) } }
             HStack(spacing: 3) {
-                EdgeButton(title: "◀ NEAR", enabled: session.focusDriveAvailable) { Task { await session.focusDrive(-2) } }
+                EdgeButton(title: "◀ 近", enabled: session.focusDriveAvailable) { Task { await session.focusDrive(-2) } }
             }
-            EdgeButton(title: "FAR ▶", enabled: session.focusDriveAvailable) { Task { await session.focusDrive(2) } }
-            EdgeButton(title: "STILL", enabled: s.supports("actTakePicture")) { Task { await session.takePicture() } }
+            EdgeButton(title: "远 ▶", enabled: session.focusDriveAvailable) { Task { await session.focusDrive(2) } }
+            EdgeButton(title: "拍照", enabled: s.supports("actTakePicture")) { Task { await session.takePicture() } }
             Spacer(minLength: touch ? 6 : 0)
             Button { Task { await session.toggleRecording() } } label: {
                 ZStack {
                     RoundedRectangle(cornerRadius: 3).fill(s.isRecording ? Theme.rec : Color.white.opacity(0.14)).frame(width: touch ? 54 : 46, height: touch ? 30 : 34)
                     HStack(spacing: 5) {
                         Circle().fill(s.isRecording ? Color.white : Theme.rec).frame(width: 10, height: 10)
-                        Text(s.isRecording ? "STOP" : "REC").font(.system(size: 9.5, weight: .bold)).foregroundStyle(Theme.text)
+                        Text(s.isRecording ? "停止" : "录制").font(.system(size: 9.5, weight: .bold)).foregroundStyle(Theme.text)
                     }
                 }
             }
@@ -457,7 +457,7 @@ struct SettingsPanel: View {
                         }
                         row("Display LUT") {
                             HStack {
-                                Toggle(overlays.customLUTName ?? (overlays.profile.isLog ? "Log → Rec.709" : "None needed"), isOn: $ov.lutOn).toggleStyle(.switch).controlSize(.small)
+                                Toggle(overlays.customLUTName ?? (overlays.profile.isLog ? "Log 转 Rec.709" : "无需转换"), isOn: $ov.lutOn).toggleStyle(.switch).controlSize(.small)
                                     .disabled(!(overlays.profile.isLog || overlays.customLUT != nil))
                             }
                         }
@@ -478,11 +478,11 @@ struct SettingsPanel: View {
                     #endif
                     ForEach(["Exposure", "Focus", "Shooting", "Image"], id: \.self) { g in
                         if let items = groups[g], !items.isEmpty {
-                            section(g) {
+                            section(LocalizedStringKey(g)) {
                                 ForEach(items) { st in
-                                    row(st.name) {
+                                    row(LocalizedStringKey(st.name)) {
                                         Picker("", selection: Binding(get: { st.current }, set: { v in Task { await session.setSetting(st.id, v) } })) {
-                                            ForEach(st.candidates.contains(st.current) ? st.candidates : [st.current] + st.candidates, id: \.self) { Text($0).tag($0) }
+                                            ForEach(st.candidates.contains(st.current) ? st.candidates : [st.current] + st.candidates, id: \.self) { Text(LocalizedStringKey($0)).tag($0) }
                                         }
                                         .disabled(!st.settable)
                                     }
@@ -513,13 +513,13 @@ struct SettingsPanel: View {
         .overlay(Rectangle().fill(Theme.panelLine).frame(width: 1), alignment: .leading)
     }
 
-    @ViewBuilder private func section<C: View>(_ title: String, @ViewBuilder content: () -> C) -> some View {
+    @ViewBuilder private func section<C: View>(_ title: LocalizedStringKey, @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title.uppercased()).font(Theme.label()).tracking(1.6).foregroundStyle(Theme.accent).padding(.horizontal, 12)
+            Text(title).font(Theme.label()).tracking(1.6).foregroundStyle(Theme.accent).padding(.horizontal, 12)
             content()
         }
     }
-    @ViewBuilder private func row<C: View>(_ name: String, @ViewBuilder control: () -> C) -> some View {
+    @ViewBuilder private func row<C: View>(_ name: LocalizedStringKey, @ViewBuilder control: () -> C) -> some View {
         HStack {
             Text(name).font(.system(size: 12)).foregroundStyle(Theme.text)
             Spacer()

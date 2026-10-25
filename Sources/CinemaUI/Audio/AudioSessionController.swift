@@ -94,11 +94,11 @@ public final class AudioSessionController {
         armError = nil; interruption = nil
         guard let uid = deviceUID else { disarm(); return }
         refreshDevices()
-        guard let device = devices.first(where: { $0.uid == uid }) else { armError = "Device not connected"; disarm(); return }
+        guard let device = devices.first(where: { $0.uid == uid }) else { armError = "输入设备未连接"; disarm(); return }
         if permission != .granted {
             let ok = await AVCaptureDevice.requestAccess(for: .audio)
             permission = ok ? .granted : .denied
-            guard ok else { armError = "Microphone access denied"; return }
+            guard ok else { armError = "麦克风访问权限已拒绝"; return }
         }
         do {
             try input.arm(device: device, channels: channels)
@@ -123,8 +123,8 @@ public final class AudioSessionController {
     private func interrupted(_ reason: AudioInputInterruption) {
         isArmed = false
         switch reason {
-        case .deviceRemoved: interruption = "Audio device removed"; awaitingReturnOfDeviceUID = selectedDeviceUID
-        case .configurationChanged: interruption = "Audio configuration changed"; awaitingReturnOfDeviceUID = nil
+        case .deviceRemoved: interruption = "音频设备已移除"; awaitingReturnOfDeviceUID = selectedDeviceUID
+        case .configurationChanged: interruption = "音频配置已更改"; awaitingReturnOfDeviceUID = nil
         case .engineStopped(let m): interruption = m; awaitingReturnOfDeviceUID = nil
         }
         if recorder.isRecording { recorder.abort(reason: .interrupted(interruption ?? "interrupted")) }
@@ -214,10 +214,10 @@ public final class AudioSessionController {
             recorder.cameraStarted(at: Date())
             confirmTimer?.cancel(); confirmTimer = nil
             meters.resetClip()
-            interruption = "Camera start was late; take kept"
+            interruption = "相机启动确认延迟，已保留这段录音"
         case .neverStarted:
             recorder.abort(reason: .cameraNeverStarted)
-            interruption = "Camera never started; take discarded"
+            interruption = "相机未开始录制，已丢弃这段录音"
             transport?.stop()
         }
     }

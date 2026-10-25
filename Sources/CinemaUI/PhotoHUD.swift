@@ -41,11 +41,11 @@ struct PhotoHUD: View {
             fileFormatBadge
             if session.captures.last?.transferring == true {
                 // A RAW pull shares the USB link with live view, so the picture pauses for a second or two.
-                sonyText(session.captures.last?.raw == nil && session.transport == .usb ? "TRANSFERRING RAW…" : "TRANSFERRING…", 11)
+                sonyText(session.captures.last?.raw == nil && session.transport == .usb ? "正在传输 RAW…" : "正在传输…", 11)
                     .foregroundStyle(Theme.warn).opacity(blink ? 1 : 0.6)
             }
             Spacer()
-            if let t = session.transport { sonyText(t.rawValue.uppercased(), 11).opacity(0.8) }
+            if let t = session.transport { sonyText(localizedCameraValue(t.rawValue.uppercased()), 11).opacity(0.8) }
             battery(s.battery)
         }
         .padding(.horizontal, 12).frame(height: 30)
@@ -186,9 +186,9 @@ struct PhotoHUD: View {
     private func modeBadge(_ mode: String?) -> some View {
         let short: String = {
             switch mode {
-            case "Manual": return "M"; case "Aperture": return "A"; case "Shutter": return "S"; case "Program Auto": return "P"
-            case "Intelligent Auto", "Superior Auto": return "AUTO"
-            default: return mode.map { String($0.prefix(4)).uppercased() } ?? "--"
+            case "Manual": return "手动"; case "Aperture": return "光圈优先"; case "Shutter": return "快门优先"; case "Program Auto": return "程序自动"
+            case "Intelligent Auto": return "智能自动"; case "Superior Auto": return "增强自动"
+            default: return mode.map(localizedCameraValue) ?? "--"
             }
         }()
         return HStack(spacing: 4) {
@@ -231,8 +231,8 @@ struct PhotoHUD: View {
     private func wbLabel(_ s: CameraState) -> String {
         if s.whiteBalanceMode == "Color Temperature", let k = s.colorTemperature { return "\(k)K" }
         switch s.whiteBalanceMode {
-        case "Auto WB": return "AWB"; case "Daylight": return "DAYLIGHT"; case "Cloudy": return "CLOUDY"; case "Shade": return "SHADE"
-        default: return s.whiteBalanceMode.map { String($0.prefix(6)).uppercased() } ?? "WB"
+        case "Auto WB": return "自动"; case "Daylight": return "日光"; case "Cloudy": return "阴天"; case "Shade": return "阴影"
+        default: return s.whiteBalanceMode.map(localizedCameraValue) ?? "白平衡"
         }
     }
 

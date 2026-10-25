@@ -4,6 +4,8 @@
 <dict>
     <key>CFBundleName</key><string>CinemaHUD</string>
     <key>CFBundleDisplayName</key><string>CinemaHUD</string>
+    <key>CFBundleDevelopmentRegion</key><string>zh-Hans</string>
+    <key>CFBundleLocalizations</key><array><string>zh-Hans</string></array>
     <key>CFBundleIdentifier</key><string>com.shivvyas.cinemahud</string>
     <key>CFBundleVersion</key><string>8</string>
     <key>CFBundleShortVersionString</key><string>2.4.1</string>
@@ -15,9 +17,9 @@
     <key>NSHighResolutionCapable</key><true/>
     <key>NSHumanReadableCopyright</key><string>CinemaHUD</string>
     <key>NSLocalNetworkUsageDescription</key>
-    <string>CinemaHUD discovers and controls your Sony camera over the camera's Wi-Fi network.</string>
+    <string>CinemaHUD 通过相机的 Wi-Fi 网络搜索并控制 Sony 相机。</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>CinemaHUD records your audio interface alongside the camera's video.</string>
+    <string>CinemaHUD 会在录制相机视频时同步录制音频接口的声音。</string>
     <key>NSAppTransportSecurity</key>
     <dict>
         <key>NSAllowsArbitraryLoads</key><true/>

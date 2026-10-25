@@ -13,26 +13,28 @@ APP="$BUILD/$APP_NAME.app"
 DMG="$BUILD/$APP_NAME-$VERSION.dmg"
 VOLNAME="$APP_NAME $VERSION"
 
-echo "▸ version $VERSION (build $BUILD_NUMBER)"
+echo "▸ 版本 $VERSION（构建号 $BUILD_NUMBER）"
 
-echo "▸ swift build (release)"
+echo "▸ 正在以发布模式编译 Swift 应用"
 swift build -c release --product "$APP_NAME" 2>&1 | grep -E "error|warning: unre|Compiling|Build complete" || true
 BIN="$(swift build -c release --product "$APP_NAME" --show-bin-path)/$APP_NAME"
 test -x "$BIN"
 
-echo "▸ assembling $APP"
+echo "▸ 正在组装 $APP"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/$APP_NAME"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+mkdir -p "$APP/Contents/Resources/zh-Hans.lproj"
+cp Resources/zh-Hans.lproj/Localizable.strings "$APP/Contents/Resources/zh-Hans.lproj/Localizable.strings"
 echo -n "APPL????" > "$APP/Contents/PkgInfo"
 if [ -f design/icon/AppIcon.icns ]; then cp design/icon/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"; else python3 scripts/make-icon.py "$APP/Contents/Resources/AppIcon.icns"; fi
 
-echo "▸ codesign (ad-hoc)"
+echo "▸ 正在进行临时签名"
 codesign --force --deep --sign - --timestamp=none "$APP"
 codesign --verify --verbose=2 "$APP" 2>&1 | tail -1
 
-echo "▸ dmg"
+echo "▸ 正在创建 DMG 安装镜像"
 STAGE="$BUILD/dmg-stage"
 rm -rf "$STAGE" "$DMG"; mkdir -p "$STAGE"
 cp -R "$APP" "$STAGE/"

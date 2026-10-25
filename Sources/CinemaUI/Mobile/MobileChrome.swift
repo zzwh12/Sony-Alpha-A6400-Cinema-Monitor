@@ -49,7 +49,7 @@ struct MobilePanelHeader: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text(title.uppercased()).font(Theme.label(10)).tracking(2.5).foregroundStyle(Theme.text)
+                Text(LocalizedStringKey(title)).font(Theme.label(10)).tracking(2.5).foregroundStyle(Theme.text)
                 Spacer()
                 Button(action: onClose) {
                     Image(systemName: "xmark").font(.system(size: 11, weight: .bold)).foregroundStyle(Theme.dim)
@@ -71,7 +71,7 @@ struct MobilePanelToggleStyle: ToggleStyle {
             HStack {
                 configuration.label.foregroundStyle(Theme.text)
                 Spacer(minLength: 8)
-                Text(configuration.isOn ? "ON" : "OFF").font(Theme.label(9)).tracking(1.2)
+                Text(configuration.isOn ? "开" : "关").font(Theme.label(9)).tracking(1.2)
                     .foregroundStyle(configuration.isOn ? Color.black : Theme.dim)
                     .frame(width: 38, height: 20)
                     .background(configuration.isOn ? Theme.accent : Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
@@ -138,7 +138,7 @@ struct ModeSwitch: View {
         HStack(spacing: 0) {
             ForEach(ShootingMode.allCases, id: \.self) { m in
                 Button { onChange(m) } label: {
-                    Text(m.rawValue).font(.system(size: 11, weight: .bold)).tracking(1.2)
+                    Text(localizedCameraValue(m.rawValue)).font(.system(size: 11, weight: .bold)).tracking(1.2)
                         .foregroundStyle(m == mode ? Color.black : Theme.text)
                         .frame(width: 66, height: 30)
                         .background(m == mode ? Theme.text : Color.clear)
@@ -170,7 +170,7 @@ struct MobileCandidateSheet: View {
         } else {
             NavigationStack {
                 list { onPick($0); dismiss() }
-                    .navigationTitle(title)
+                    .navigationTitle(LocalizedStringKey(title))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
             }
@@ -184,7 +184,7 @@ struct MobileCandidateSheet: View {
             List(candidates, id: \.self) { c in
                 Button { pick(c) } label: {
                     HStack {
-                        Text(format(c)).font(Theme.mono(16, weight: c == current ? .semibold : .regular)).foregroundStyle(Theme.text)
+                        Text(localizedCameraValue(format(c))).font(Theme.mono(16, weight: c == current ? .semibold : .regular)).foregroundStyle(Theme.text)
                         Spacer()
                         if c == current { Image(systemName: "checkmark").foregroundStyle(Theme.accent) }
                     }
@@ -206,7 +206,7 @@ struct MobileCandidateSheet: View {
                 VStack(spacing: 2) {
                     ForEach(candidates, id: \.self) { c in
                         Button { pick(c) } label: {
-                            Text(format(c)).font(Theme.mono(15, weight: c == current ? .semibold : .regular))
+                            Text(localizedCameraValue(format(c))).font(Theme.mono(15, weight: c == current ? .semibold : .regular))
                                 .foregroundStyle(c == current ? Color.black : Theme.text)
                                 .frame(maxWidth: .infinity, minHeight: 34)
                                 .background(c == current ? Theme.accent : Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 3))

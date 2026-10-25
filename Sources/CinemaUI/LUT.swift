@@ -4,7 +4,7 @@ import CoreImage
 /// Camera picture profile the operator has set on the body. The app cannot switch it remotely on the
 /// α6400, but it tells the monitor which log curve the feed is in so the LOG button can apply the right LUT.
 public enum PictureProfile: String, CaseIterable, Identifiable {
-    case standard = "Standard / PP1–PP6"
+    case standard = "标准 / PP1–PP6"
     case pp7 = "PP7 · S-Log2 / S-Gamut"
     case pp8 = "PP8 · S-Log3 / S-Gamut3.Cine"
     case pp9 = "PP9 · S-Log3 / S-Gamut3"
@@ -102,7 +102,7 @@ public enum LUTBuilder {
             if line.isEmpty || line.hasPrefix("#") || line.hasPrefix("TITLE") { continue }
             let parts = line.split(separator: " ").map(String.init)
             if parts[0] == "LUT_3D_SIZE", parts.count >= 2 { size = Int(parts[1]) ?? 0; continue }
-            if parts[0] == "LUT_1D_SIZE" { throw LUTError.unsupported("1D LUTs are not supported") }
+            if parts[0] == "LUT_1D_SIZE" { throw LUTError.unsupported("暂不支持一维 LUT") }
             if parts[0] == "DOMAIN_MIN", parts.count >= 4 { domainMin = parts[1...3].compactMap(Float.init); continue }
             if parts[0] == "DOMAIN_MAX", parts.count >= 4 { domainMax = parts[1...3].compactMap(Float.init); continue }
             if parts.count >= 3, let r = Float(parts[0]), let g = Float(parts[1]), let b = Float(parts[2]) {
@@ -110,7 +110,7 @@ public enum LUTBuilder {
                 values += [scale(r, 0), scale(g, 1), scale(b, 2), 1]
             }
         }
-        guard size >= 2, values.count == size * size * size * 4 else { throw LUTError.unsupported("Malformed .cube (expected \(size)³ entries)") }
+        guard size >= 2, values.count == size * size * size * 4 else { throw LUTError.unsupported(".cube 文件格式无效（预期包含 \(size)³ 个色彩条目）") }
         return (Data(bytes: values, count: values.count * 4), size)
     }
 

@@ -22,6 +22,6 @@ final class GuidesTests: XCTestCase {
     func testPeakingColours() {
         XCTAssertEqual(PeakingColor.red.rgb.0, 1, accuracy: 0.001)
         XCTAssertEqual(PeakingColor.blue.rgb.2, 1, accuracy: 0.001)
-        XCTAssertEqual(PeakingColor.allCases.map(\.rawValue), ["Red", "Yellow", "White", "Blue"])
+        XCTAssertEqual(PeakingColor.allCases.map(\.rawValue), ["红色", "黄色", "白色", "蓝色"])
     }
 }

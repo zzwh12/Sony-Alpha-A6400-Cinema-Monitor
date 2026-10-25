@@ -31,7 +31,7 @@ public final class SyncTakesModel {
         busy = true; defer { busy = false }
         message = nil
         let clips = await TakeSync.inspect(urls)
-        guard !clips.isEmpty else { message = "No clips found (looking for .MP4 / .MOV)"; return }
+        guard !clips.isEmpty else { message = "没有找到视频片段（请检查 .MP4 / .MOV 文件）"; return }
         pairs = Self.markMissing(TakeSync.pair(clips: clips, takes: takes), dayFolder: dayFolder)
     }
 
@@ -110,10 +110,10 @@ public final class SyncTakesModel {
         let xmlURL = synced.appendingPathComponent("CinemaHUD_\(day).fcpxml")
         do {
             try xml.write(to: xmlURL, atomically: true, encoding: .utf8)
-            message = "Exported to \(synced.path)"
+            message = "已导出到 \(synced.path)"
             NSWorkspace.shared.activateFileViewerSelecting([xmlURL])
         } catch {
-            message = "Could not write FCPXML: \(error.localizedDescription)"
+            message = "无法写入 FCPXML：\(error.localizedDescription)"
         }
     }
 
@@ -154,7 +154,7 @@ public struct SyncTakesView: View {
             }
             if model.pairs.isEmpty {
                 ContentUnavailableView("Drop the card's clips here", systemImage: "waveform.badge.plus",
-                                       description: Text("Drag the CLIP folder from the SD card, or choose files. Takes come from \(model.dayFolder.lastPathComponent)/takes.json."))
+                                       description: Text("将 SD 卡中的 CLIP 文件夹拖到此处，或选择文件。录音信息读取自 \(model.dayFolder.lastPathComponent)/takes.json。"))
             } else {
                 Table(model.pairs) {
                     TableColumn("Clip") { Text($0.clip.name) }
@@ -164,9 +164,9 @@ public struct SyncTakesView: View {
                             ForEach(model.takes.filter { $0.outcome == .complete }) { Text($0.id).tag($0.id) }
                         }.labelsHidden()
                     }
-                    TableColumn("Duration") { Text(String(format: "%.1f s", $0.clip.duration)) }
-                    TableColumn("Offset") { p in Text(p.offsetSeconds.map { String(format: "%.3f s", $0) } ?? "—") }
-                    TableColumn("Confidence") { p in Text(p.confidence.map { String(format: "%.0f %%", $0 * 100) } ?? "—") }
+                    TableColumn("Duration") { Text(String(format: "%.1f 秒", $0.clip.duration)) }
+                    TableColumn("Offset") { p in Text(p.offsetSeconds.map { String(format: "%.3f 秒", $0) } ?? "—") }
+                    TableColumn("Confidence") { p in Text(p.confidence.map { String(format: "%.0f%%", $0 * 100) } ?? "—") }
                     TableColumn("Status") { p in Text(statusText(p.status)).foregroundStyle(statusColor(p.status)) }
                 }
             }
@@ -196,21 +196,21 @@ public struct SyncTakesView: View {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true; panel.canChooseFiles = true; panel.allowsMultipleSelection = true
         panel.allowedContentTypes = [.mpeg4Movie, .quickTimeMovie, .folder]
-        panel.title = "Choose camera clips or the card's CLIP folder"
+        panel.title = "选择相机视频片段或存储卡中的 CLIP 文件夹"
         if panel.runModal() == .OK { Task { await model.load(panel.urls) } }
     }
     private func chooseDayFolder() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true; panel.canChooseFiles = false
         panel.directoryURL = model.dayFolder.deletingLastPathComponent()
-        panel.title = "Choose the day folder (contains takes.json)"
+        panel.title = "选择日期文件夹（其中包含 takes.json）"
         if panel.runModal() == .OK, let u = panel.url { model.dayFolder = u }
     }
     private func statusText(_ s: TakePair.Status) -> String {
         switch s {
-        case .unpaired: return "No take"; case .estimated: return "Estimated"; case .synced: return "Synced"
-        case .lowConfidence: return "Low confidence (estimate used)"; case .missingWAV: return "WAV missing"
-        case .exported: return "Exported"; case .failed(let m): return "Failed: \(m)"
+        case .unpaired: return "未关联录音"; case .estimated: return "已估算"; case .synced: return "已同步"
+        case .lowConfidence: return "置信度低（使用估算值）"; case .missingWAV: return "缺少 WAV 文件"
+        case .exported: return "已导出"; case .failed(let m): return "失败：\(m)"
         }
     }
     private func statusColor(_ s: TakePair.Status) -> Color {

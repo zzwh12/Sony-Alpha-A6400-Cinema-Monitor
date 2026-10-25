@@ -83,7 +83,7 @@ final class AudioSessionControllerTests: XCTestCase {
 
         c.simulateDevicesChanged([scarlett])            // the awaited device returns → arm attempt (fails: bogus id, no permission)
         try await Task.sleep(for: .milliseconds(500))
-        XCTAssertEqual(c.armError, "Device not connected", "refreshDevices() replaces the fake list with the real HAL list before the lookup, so the fake uid is not found")
+        XCTAssertEqual(c.armError, "输入设备未连接", "refreshDevices() replaces the fake list with the real HAL list before the lookup, so the fake uid is not found")
         XCTAssertFalse(c.isArmed)
 
         c.simulateInterruption(.configurationChanged)   // clears the gate

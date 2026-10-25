@@ -12,21 +12,21 @@ final class AdvisorPromptTests: XCTestCase {
         let f = [Finding(id: "face-under", kind: .exposure, severity: .warn, fact: "FACE 1 STOP UNDER", detail: "The largest face reads 28; target 55."),
                  Finding(id: "horizon", kind: .framing, severity: .info, fact: "HORIZON 2° OFF", detail: "The horizon is tilted 2.2°.")]
         let p = AdvisorPrompt.build(findings: f, measurements: m, state: s, profile: .standard, projectFPS: 24)
-        XCTAssertTrue(p.contains("Manual mode"))
-        XCTAssertTrue(p.contains("shutter 1/50 (172.8 degree angle at 24 fps)"))
-        XCTAssertTrue(p.contains("iris F2.8"))
+        XCTAssertTrue(p.contains("手动模式"))
+        XCTAssertTrue(p.contains("快门 1/50（24 fps 下 172.8°）"))
+        XCTAssertTrue(p.contains("光圈 F2.8"))
         XCTAssertTrue(p.contains("EI 800"))
-        XCTAssertTrue(p.contains("picture profile STD"))
-        XCTAssertTrue(p.contains("one face at 28 luma"))
-        XCTAssertTrue(p.contains("3 percent clipped white"))
-        XCTAssertTrue(p.contains("horizon tilted 2.2 degrees"))
-        XCTAssertTrue(p.contains("[face-under] Face 1 Stop Under: The largest face reads 28; target 55."))
-        XCTAssertTrue(p.contains("[horizon] Horizon 2° Off: The horizon is tilted 2.2°."))
+        XCTAssertTrue(p.contains("图片配置文件 STD"))
+        XCTAssertTrue(p.contains("检测到 1 张人脸，最大人脸亮度 28"))
+        XCTAssertTrue(p.contains("3% 高光溢出"))
+        XCTAssertTrue(p.contains("地平线倾斜 2.2°"))
+        XCTAssertTrue(p.contains("[face-under] FACE 1 STOP UNDER：The largest face reads 28; target 55."))
+        XCTAssertTrue(p.contains("[horizon] HORIZON 2° OFF：The horizon is tilted 2.2°."))
         XCTAssertFalse(p.contains("="), "no key=value tokens: the model's language check rejects them")
         XCTAssertLessThan(p.count, 1200, "prompt must stay small for the on-device context")
     }
     func testInstructionsForbidValues() {
-        XCTAssertTrue(AdvisorPrompt.instructions.contains("Never suggest values"))
+        XCTAssertTrue(AdvisorPrompt.instructions.contains("不要建议参数值"))
     }
     func testAvailabilityReasonIsNilOnlyWhenAvailable() {
         let a = ShotAdvisorAvailability.current

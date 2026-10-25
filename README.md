@@ -1,351 +1,165 @@
 # CinemaHUD
 
-![CinemaHUD on a MacBook Pro, iPhone and iPad: the cinema viewfinder with live exposure and status strips](docs/images/cinemahud-hero.jpg)
+> **简体中文汉化版**
+>
+>上游项目:[shivvyas2/Sony-Alpha-A6400-Cinema-Monitor](https://github.com/shivvyas2/Sony-Alpha-A6400-Cinema-Monitor)
 
-A native macOS, iPhone and iPad app that turns a Sony α6400 into a remote-monitored cinema camera: live view
-with a cinema-style HUD for shutter, iris, ISO, white balance, EV and focus, plus
-click-to-focus, still capture, movie record, focus peaking, zebras, framing guides and cinema
-aspect crops that fill an ultrawide monitor.
+![CinemaHUD 在 MacBook Pro、iPhone 和 iPad 上的监看画面，显示电影风格取景器和实时曝光信息](docs/images/cinemahud-hero.jpg)
 
-It connects either over **USB** (the camera's "PC Remote" mode, PTP with Sony's extensions,
-driven directly through IOUSBHost) or over the camera's own **Wi-Fi** (the Sony Camera Remote API,
-the same protocol PlayMemories Mobile / Imaging Edge Mobile use). No Sony software or drivers required.
+CinemaHUD 是适用于 macOS、iPhone 和 iPad 的 Sony α 相机远程监视器。它将实时取景画面与电影风格 HUD 结合，可查看快门、光圈、ISO、白平衡、曝光补偿和对焦状态，并支持触屏对焦、拍照、视频录制、峰值对焦、斑马纹、伪色、构图辅助线和电影画幅裁切。
 
-## Using it
+应用通过 **USB** 或相机自带的 **Wi-Fi** 连接相机。macOS 版可直接通过 IOUSBHost 与 Sony PTP 扩展通信，也支持 Sony Camera Remote API；无需安装 Sony 驱动或配套软件。
 
-### USB (recommended: lowest latency, no dropouts)
+## 连接相机
 
-1. **Camera:** MENU → Setup → *USB Connection* → **PC Remote**. Turn the mode dial to M (or Movie M).
-2. Connect the USB cable, open **CinemaHUD**, click **Connect USB**.
+### USB（推荐，延迟最低）
 
-If the camera mounts as a drive instead, it is still in Mass Storage mode: eject it, change the
-setting, and reconnect. macOS's Image Capture service grabs every PTP camera at plug-in; CinemaHUD
-releases it automatically when you click Connect USB. If a different app (Imaging Edge, Capture One)
-holds the camera, the error names it: quit that app and connect again.
+1. 在相机菜单中将“USB 连接”设为 **PC Remote（电脑遥控）**。
+2. 将模式转盘设为 M 或视频 M。
+3. 连接 USB 线缆，在 CinemaHUD 中点按“连接 USB”。
+
+如果相机被识别为磁盘，请先在相机上退出 Mass Storage（大容量存储）模式。macOS 的图像捕捉服务可能会占用 PTP 相机；CinemaHUD 在连接时会尝试释放设备。如果 Imaging Edge、Capture One 等应用正在使用相机，请先退出该应用。
 
 ### Wi-Fi
 
-1. **Camera:** MENU → Network → *Ctrl w/ Smartphone* → **On**, then *Connection*.
-   The screen shows an SSID like `DIRECT-xxxx:ILCE-6400` and a password.
-2. **Mac:** join that Wi-Fi network.
-3. Click **Discover**. If nothing is found, type `192.168.122.1:8080`
-   into the address box and click **Connect** (that is the camera's fixed address in this mode).
+1. 在相机中开启“用智能手机控制”，然后进入连接界面。
+2. Mac 或 iPhone/iPad 加入相机显示的 Wi-Fi 网络。
+3. 点按“搜索”。如果没有找到相机，可输入 `192.168.122.1:8080` 后选择“连接”。
 
-The app drops stale frames and always shows the newest one, and reconnects by itself if the
-link hiccups.
+Wi-Fi 连接支持触屏对焦。相机通常会带来更高延迟和较低帧率，但应用会优先显示最新画面，并在连接中断后自动尝试恢复。
 
-### First launch on macOS
+macOS 安装包为临时签名，未经公证。首次打开时，如果系统阻止启动，请在 Finder 中右键点按应用并选择“打开”，或前往“系统设置 → 隐私与安全性”选择“仍要打开”。首次搜索相机时，macOS 还会请求本地网络访问权限，请选择允许。
 
-The DMG is ad-hoc signed, not notarized. macOS will refuse to open it the first time.
-Either right-click the app → **Open** → **Open**, or go to System Settings → Privacy & Security
-and click **Open Anyway**. macOS will also ask for **Local Network** permission the first time you
-click Discover; allow it.
+### iPhone / iPad 的 Mac 桥接
 
-### Controls
+iPhone 和 iPad 无法通过 USB 直接连接相机。可以先用 USB 将相机连接到 Mac，再在 Mac 的“相机”菜单中开启“共享相机到 iPhone / iPad”。iOS 版会在本地网络中发现这台 Mac，并使用它转发的画面、相机状态和控制命令。
 
-| Action | Where | Key |
-|---|---|---|
-| Change FPS, shutter, iris, EI, EV, WB, focus mode | click a top-strip readout, or scroll over it | |
-| Autofocus (half-press) / AE lock | AF, AEL (right column) | Space |
-| Manual focus nudge (USB, MF/DMF) | NEAR / FAR, or the menu's focus drive row | |
-| Take a still | STILL | Return |
-| Start / stop movie recording | REC | R |
-| Set AF point (Wi-Fi) | click on the picture | |
-| Frame lines / 2.39 guide / crop | FRAME, GUIDE, CROP (left column) | G, F, 1–9, 0 |
-| Focus peaking / zebras / false color | PEAK, ZEBRA, EXP | P, Z, V |
-| 2× magnify | 2.00× | X |
-| Scopes: waveform, RGB parade, RGB histogram, vectorscope | SCOPE cycles | W |
-| Picture profile / LOG ↔ 709 view / custom .cube LUT | profile badge, LOG/709 button, Overlays menu | L |
-| Shot assist advisories with one-click fixes | ASSIST button, rows under the exposure strip | — |
-| Mist diffusion look (display only) | MIST button | — |
-| Enhanced upscaling (MetalFX + detail recovery) | ENH | E |
-| Smooth motion ×2 / ×4 / ×8 (30 / 60 / 120 fps) | MOTION cycles | M |
-| Live denoise NR1 / NR2 (temporal, motion-compensated) | NR cycles | D |
-| Camera menu (drive, metering, DRO, flash, focus area, image size, aspect, picture effect, …) | MENU | N |
-| Rotate display for vertical mounting | Aspect menu | T |
-| Hide the HUD | | H |
-| Full screen | View › Enter Full Screen | ⌃⌘F |
+## 拍摄与监看
 
-### Photo mode
+### 视频模式
 
-Turn the mode dial to a still position and the app switches to **Photo mode** (Tab forces either mode
-until the dial moves). The display follows the camera body's own LCD: mode badge, shots remaining,
-RAW+J badge and battery across the top; focus mode and area on the left; shutter, aperture, EV and ISO
-along the bottom (click or scroll to change). Sony's focus dot sits bottom-left, green when focus is
-confirmed, and a small bar next to it shows how sharp the AF region is on the live view.
+顶部信息栏显示项目帧率、快门角度与快门速度、光圈、ISO、曝光补偿、白平衡和对焦状态。底部信息栏显示镜头焦距、电量、卷号、片段号、录制状态、存储卡余量与时间码。侧边工具可切换构图辅助、伪色、峰值对焦、斑马纹、示波器、放大和图片配置文件预览。
 
-**Every shot is transferred to the Mac as it is taken**, whether you press the shutter in the app or on
-the camera, and saved to `~/Pictures/CinemaHUD/<yyyy-MM-dd>/` under the camera's own filename. Over USB
-both the JPEG and the RAW (ARW) arrive; on the camera set *File Format* to RAW+JPEG and
-*Still Img. Save Dest.* to **PC** or **PC+Camera**. Over Wi-Fi Sony's remote API only sends the JPEG.
+### 照片模式
 
-The moment the JPEG lands it replaces the live view for **review**: the real full-resolution image
-with a 100 % loupe on the AF point and a focus verdict (IN FOCUS / SOFT / MISSED, with a marker where
-the image is actually sharpest). Click to move the loupe, scroll to zoom, drag to pan, R switches
-between JPEG and RAW once both are in, ← / → step through the shots, Escape returns to live view.
-Return or Space fire the shutter or AF and leave review too. Thumbnails of the session's shots sit
-along the bottom of the live view.
+将相机转盘切换到照片档位，应用会切换到照片监看界面（也可按 Tab 暂时切换）。拍摄的 JPEG 和 RAW 文件会传输到 Mac，并保存到 `~/Pictures/CinemaHUD/<日期>/`。相机需设为 RAW+JPEG，并将静态影像保存位置设为 PC 或 PC+Camera。Wi-Fi 遥控接口只会传送 JPEG。
 
-### The monitor
+照片传输完成后会自动进入回看。可在 JPEG 与 RAW 之间切换、放大对焦点、拖动查看画面，并用左右方向键浏览照片；按 Esc 返回实时画面。底部胶片栏会显示当前拍摄会话中的照片。
 
-The layout follows a cinema viewfinder. The top strip carries exposure: FPS (project), SHUTTER
-as an angle with the speed beside it, IRIS, EI, EV, WB with the green/magenta shift as CC, and
-FOCUS, plus the profile badge, the exposure mode and the camera index. The bottom strip carries
-status: FCL (focal length, USB), PWR, reel and clip (the clip number is the take counter), STBY
-in green or REC in red with duration, MEDIA remaining and free-running TC. Tool columns sit on
-the edges of the picture; an active tool is orange. Frame lines are red action-safe lines with
-edge ticks; recording adds a red border.
+### 构图辅助
 
-### Log, LUTs and picture profiles
+可开启三分网格、中心标记、安全框、对角线和不同画幅的取景框线。裁切会实际缩小监看画面；取景框线只作叠加提示。支持 16:9、1.85:1、2.00:1、2.35:1、2.39:1、1:1、4:5 和 9:16 等比例。相机横向安装时，可旋转画面以便竖屏拍摄。
 
-The α6400 does not expose Picture Profile over its remote protocol, so it cannot be switched from
-the Mac. Set PP7 (S-Log2), PP8/PP9 (S-Log3) or PP10 (HLG) on the camera, then tell the monitor
-with the profile badge. **LOG/709** toggles between the flat feed and the built-in conversion to
-Rec.709 (S-Log3/S-Gamut3.Cine, S-Log3/S-Gamut3, S-Log2/S-Gamut, HLG/BT.2020 with a soft highlight
-roll-off). **Load .cube LUT…** applies your own 3D LUT instead. Scopes read the picture after the LUT.
+### 曝光、色彩与 LUT
 
-**Shot assist** (Mac, video): the monitor measures faces, focus, clipping and horizon on the live
-picture and shows one or two advisories under the exposure strip — "FACE 1 STOP UNDER · EI 800 → 1600",
-"FOCUS OFF SUBJECT · AF ON FACE", "SHUTTER 17° · 1/500 → 1/48" — each applied with one click. On
-macOS 26 with Apple Intelligence, the on-device model phrases them (marked AI); elsewhere the plain
-facts show. Nothing leaves the Mac. ASSIST in the left column turns it off. When the shot is clean it
-nudges toward a more cinematic image instead: open the iris for a soft background, or turn on MIST.
+α6400 不允许通过遥控协议更改图片配置文件，请先在相机机身上选择 PP7、PP8、PP9 或 PP10，再在 CinemaHUD 中指定相同配置。LOG/709 预览可将 S-Log2、S-Log3 或 HLG 画面转换为 Rec.709。也可载入自定义 `.cube` 3D LUT。示波器会读取 LUT 处理后的画面。
 
-**MIST** (right column, MIST1 / MIST2) is a display-only diffusion look: highlights bloom into a soft
-halo and skin softens, the way a Pro-Mist filter renders. The camera records clean; zebras, false
-colour and the scopes keep reading the unmisted picture, and NATIVE goes off in the bottom strip
-while it is on.
+应用会按 sRGB 或 Rec.709 标记相机 JPEG，并由 macOS 根据外接显示器的 ICC 配置进行色彩转换。切换预览 LUT、降噪或运动平滑只改变监看效果，不会修改相机实际录制的素材。
 
-### Vertical and social formats
+### 画面增强
 
-CROP cycles through 1:1, 4:5 and 9:16 as well as the cinema ratios, trimming the sides so you frame
-for Reels, Stories or feed posts. If the camera is mounted sideways in a cage, rotate the display
-by 90° or 270° (T); touch AF coordinates are mapped back to the sensor.
+- **增强放大**使用 MetalFX 在 GPU 上放大实时画面；不支持 MetalFX 时会改用 Lanczos。
+- **细节恢复**可在放大后进行锐化。
+- **动态平滑**可合成帧间画面，将显示帧率提高到 ×2、×4 或 ×8。因为需要等待下一帧，会增加约一帧延迟。
+- **实时降噪**通过运动补偿融合相邻画面，可选轻度或强度两档。
+- **柔光效果**只影响监视器预览，为高光添加光晕并柔化肤色，不影响相机录制内容。
 
-### Enhanced mode
+这些处理不会凭空增加相机传感器的细节；严肃对焦时建议关闭动态平滑和降噪。
 
-**ENHANCE** (E) renders the live view through Apple's MetalFX spatial upscaler on the GPU,
-reconstructing edges when the 1024×680 feed is stretched to a 4K or Retina display. It adds no
-latency. On GPUs without MetalFX, or when the window is smaller than the feed, it falls back to
-Lanczos resampling. The top bar shows the output resolution and which path is active (MFX or
-LANCZOS). It is a nicer picture, not a truer one: the camera still sends 1024×680, so it will
-not reveal detail or focus the sensor feed does not contain. Frame rate is unchanged.
+相机实时画面为 1024×680 JPEG。Wi-Fi 通常有约 100–300 毫秒延迟，帧率也会低于 USB；建议在距离相机较近且无遮挡的位置使用。画面处理主要由 GPU 完成，实时示波器读取缩小后的画面区域。
 
-### Smooth motion
+### 拍摄辅助
 
-**MOTION** multiplies the displayed frame rate, ×2, ×4 or ×8 (30, 60 or 120 fps from the
-camera's 15), by synthesizing the frames between each pair of real frames: Vision computes dense
-optical flow once per pair and a Metal kernel warps both real frames to each in-between time.
-Because the in-betweens need the following frame, the picture is shown one input frame later
-(about 66 ms at 15 fps); the bottom strip shows the multiplier and the added delay. ×8 only
-matters on a 120 Hz (ProMotion) display. Motion looks smoother, but nothing new is captured;
-turn it off when pulling critical focus.
+macOS 版可分析人脸曝光、对焦、剪切高光、地平线和构图，并给出可一键应用的建议。运行 macOS 26 且支持 Apple Intelligence 时，可由本机模型简化建议措辞；所有画面分析均在 Mac 本地完成。
 
-### Live denoise
+## 现场音频（macOS）
 
-**NR** (D) is a temporal, motion-compensated noise reducer: every incoming frame is blended
-with the previous cleaned frame warped along the optical flow, and the blend weight drops to
-zero wherever the two disagree, so grain averages out while moving edges stay crisp. NR1 is
-light, NR2 strong. It costs one flow computation per frame (about 20 ms) and no extra delay.
-Like every monitor tool, it changes only what you see, not what the camera records.
+CinemaHUD 可从音频接口录制 WAV，并通过 MIDI 时间码和 MIDI 机器控制与 Logic 同步。使用“同步素材”可将 WAV 与相机片段对齐，并导出供 Final Cut Pro 使用的 XML。相机片段可从 SD 卡的 CLIP 文件夹导入。
 
-### Colour accuracy
+## 控制快捷键（macOS）
 
-The monitor is colour managed end to end. The camera's live view is an sRGB JPEG; the app tags it
-as such (or as Rec.709 / BT.1886 if you choose "Interpret Feed As" in the Overlays menu) and macOS
-converts it to the connected display's ICC profile, so a P3 MacBook panel and a calibrated external
-monitor both show the same intended colours. The enhanced Metal path is tagged the same way and was
-measured to match the plain path within 1/255. Nothing alters the picture unless you switch it on:
-the bottom strip shows **NATIVE** when no LUT, effect, denoise, interpolation or sharpening is active.
-For the most faithful view on an external monitor, use its sRGB or Rec.709 preset, or a calibrated profile.
+| 操作 | 快捷键 |
+|---|---|
+| 自动对焦 / 自动曝光锁定 | 空格 |
+| 拍摄照片 | Return |
+| 开始 / 停止视频录制 | R |
+| 隐藏 HUD | H |
+| 峰值对焦 | P |
+| 斑马纹 | Z |
+| 伪色 | V |
+| 三分网格 | G |
+| 取景框线 | F |
+| 放大 | X |
+| 切换示波器 | W |
+| 切换菜单 | N |
+| 切换图片配置文件预览 | L |
+| 切换动态平滑 | M |
+| 切换实时降噪 | D |
+| 切换照片 / 视频模式 | Tab |
+| 退出照片回看 | Esc |
 
-### GPU pipeline
+## 使用 GitHub Actions 构建 iOS IPA
 
-Every per-pixel stage runs on the Mac's GPU and stays there: the decoded frame is uploaded once,
-Core Image applies the LUT, false colour, zebras, peaking and rotation as one lazy graph rendered
-directly into the Metal renderer's texture, MetalFX (or Lanczos) scales it to the display, the
-optional detail pass runs as a compute kernel, and the layer is presented colour-managed. Motion
-interpolation and denoise output Metal textures that are wrapped without copying. Scopes sample a
-256×96 tile the GPU downscales. Measured on the simulator feed: enhance + LUT + waveform dropped
-from 72% to about 14% of one CPU core; motion ×4 with denoise sits near 45%, which is the optical
-flow scheduling and the 60–120 frames per second of view updates, not pixel work.
+在 GitHub 仓库的 **Actions** 页面运行“构建 iOS 安装包”，或推送到 `main` 分支、推送 `v*` 标签。工作流会上传名为 `CinemaHUD-iOS-安装包` 的构建产物。
 
-### Wi-Fi performance
+不设置签名密钥时，工作流会生成需要另行签名后才能安装的 IPA。若要自动导出 Ad Hoc 签名安装包，请在仓库的 Actions Secrets 中配置以下四项：
 
-The processing path is identical over Wi-Fi; the difference is the link. The camera's Wi-Fi
-serves the same 1024-wide JPEG stream, typically at a lower and less steady rate than USB, with
-100–300 ms of latency and occasional stalls. The app always shows the newest frame (no backlog),
-restarts the stream and re-runs the handshake automatically on a drop, and the interpolator
-adapts to whatever rate arrives. Expect fewer real frames per second than USB, more delay, and
-identical colour and tools. Stay within a few metres with line of sight; the camera's radio is
-the limit, not the Mac.
+- `APPLE_CERTIFICATE_BASE64`：Apple Distribution `.p12` 证书的 Base64 内容。
+- `APPLE_CERTIFICATE_PASSWORD`：该 `.p12` 证书的密码。
+- `PROVISIONING_PROFILE_BASE64`：适用于 `com.shivvyas.cinemahud.mobile` 的 Ad Hoc 描述文件 Base64 内容。
+- `APPLE_TEAM_ID`：Apple Developer 团队 ID。
 
-### What "true quality" means here
+Ad Hoc 描述文件必须包含准备安装应用的设备。
 
-The recording is not affected by any of this. The camera writes its full 4K or 1080p file
-internally; the Mac only receives a 1024-pixel-wide monitoring stream. ENHANCE makes that
-stream look as close to the recording as a real-time GPU pipeline can: temporal denoise first
-(if NR is on), MetalFX edge-aware reconstruction to the display resolution, then an edge-gated
-detail-recovery pass that raises local contrast only where there is real structure. It cannot
-invent detail the stream never contained, so judge critical focus with PEAK and 2× magnify, and
-judge exposure with the scopes and false color, which read the actual pixel values.
+## 构建 macOS 版
 
-### Live view quality and frame rate
-
-The α6400 generates its remote live view at 1024×680. Over USB the body delivers it at 15 fps,
-which is the camera's limit for this protocol, not the app's. The app polls continuously and
-displays each frame as soon as it arrives. For full-resolution, 30/60 fps monitoring use the
-camera's HDMI output into a UVC capture device; that is the next planned video source.
-
-### Field audio (Mac)
-
-The α6400 has no headphone jack and records 16-bit sound from its own preamps. CinemaHUD can be the
-sound recorder instead: **Audio ▸ Input** picks any Core Audio interface (a Focusrite Scarlett, for
-example), **Audio ▸ Channels** picks up to eight inputs, and the bottom strip shows the source, its
-rate and a level bar per channel (red = clipped since the last take; **Audio ▸ Reset Clip Indicators**).
-Phantom power is a hardware switch on the interface; the app cannot see or set it.
-
-Every take is recorded to `~/Movies/CinemaHUD/<yyyy-MM-dd>/audio/<camera>_<reel>_C<clip>.wav`
-(48 kHz, 24-bit) with 3 s of pre-roll before the REC press and 1 s after the body stops, whether REC
-was pressed in the app or on the camera. The WAV carries Broadcast Wave timecode (time of day, the
-same numbers as the TC readout) and iXML scene/take metadata (**Audio ▸ Scene & Note…**). `takes.json`
-in the day folder lists every take with its timestamps.
-
-**Logic Pro.** **Audio ▸ Send Timecode to Logic** (⇧⌘M) publishes a virtual MIDI source named
-"CinemaHUD" that sends MIDI Timecode at the project frame rate and MMC record/stop on every take.
-In Logic: File ▸ Project Settings ▸ Synchronization ▸ Sync Mode = **MTC** with the same frame rate;
-Settings ▸ MIDI ▸ Sync ▸ **Listen to MMC Input** on; and "CinemaHUD" enabled under MIDI inputs.
-Logic then starts recording on REC and its regions sit at the same timecode as the WAVs.
-
-**Sync Takes (⌘Y).** The launch screen's **After the Shoot** panel opens it, as does the Audio menu.
-After the shoot, drop the card's `PRIVATE/M4ROOT/CLIP` folder (or individual clips) on the window. The app pairs each clip with a take by order and length, then **Sync All** finds
-the exact offset by cross-correlating the clip's own audio against the WAV (feeding the interface's
-line out into the camera's mic input makes this bulletproof; the built-in mic usually works too).
-**Clear** empties the table for another card. **Export** writes, into `<day>/synced/`: a trimmed WAV
-that starts with the clip, a `.mov` with the video untouched and the interface audio as track 1
-(camera audio kept as track 2), and
-`CinemaHUD_<day>.fcpxml`. In Final Cut Pro, File ▸ Import ▸ XML brings in an event with every clip
-already synced (camera audio muted, WAV connected); Resolve imports the same file.
-Rows marked "Low confidence" use the estimate from the take log; check them in the editor.
-
-### Verified on hardware (α6400, firmware 2.00, USB)
-
-Connect, live view, shutter / iris / ISO stepping (lands on the nearest value the current mode
-offers), movie record start/stop with true recording state, battery. Touch AF is Wi-Fi only.
-Still capture and half-press AF over USB are implemented but were only exercised in movie mode,
-where the body ignores them; test them in a stills mode.
-
-Photo mode: RAW+JPEG transfer, body-triggered transfer, auto review and the focus verdict have been
-exercised against the simulator only; hardware verification pending.
-
-Field audio: arm a Scarlett 2i2 (meters follow input) — pending; REC on the α6400 produces a WAV of
-clip length + ~4 s — pending; Logic 11 chases MTC and records on REC — pending; Sync Takes on a real
-card gives "Synced" rows — pending; Final Cut Pro imports the FCPXML with clips in sync — the first
-attempt failed with "Invalid edit with no respective media" on the connected WAV, because durations
-were rounded to the nearest frame and so claimed up to half a frame more audio than the trimmed file
-holds; durations bounded by real media now floor, and the WAV states its length in samples. Re-import
-pending.
-
-## iPhone and iPad
-
-`iOS/CinemaHUDMobile.xcodeproj` (generated from `iOS/project.yml` with XcodeGen) builds a touch-first
-field monitor for iOS 17+ on the shared `CinemaUI` and `SonyCameraKit` modules. It works in any
-orientation: landscape puts tool rails on the sides and exposure along the bottom; portrait puts the
-picture on top and a control deck below. A VIDEO | PHOTO switch sits in the top band (over Wi-Fi it
-also moves the camera's shoot mode; over USB / bridge the body's dial decides). Sheets cover
-**Guides** (thirds, centre, safe areas, diagonals, frame lines with a ratio picker), **Focus**
-(AF mode, manual focus wheel and steps over USB / bridge, peaking with colour, 2× magnify, sharpness
-meter), **Zoom** (W/T rocker for power-zoom lenses over Wi-Fi) and **Format** (still size / aspect,
-movie quality and file format where the camera exposes them). Settings holds display options,
-About, the Privacy Policy and the Terms of Use. Captures the camera hands over are saved under
-CinemaHUD in the Files app. Tap a readout for its list, swipe up or down on it to step like a dial,
-tap the picture to focus.
-
-Two ways to connect:
-
-- **Mac bridge (recommended).** iPhones and iPads cannot talk to the camera over USB, so keep the
-  camera on the Mac by USB and let the Mac share it. The Mac app advertises itself on the local
-  network as soon as a camera is connected (Camera menu → *Share Camera to iPhone / iPad*, on by
-  default). The iOS app lists Macs it finds; tap one. The Mac re-serves the camera's own JPEG
-  frames untouched plus state and every control, so the iPad sees exactly what the Mac sees with
-  USB reliability, and all processing runs on the iPad's GPU.
-- **Camera Wi-Fi directly.** Same as the Mac: Ctrl w/ Smartphone on the camera, join its network.
-  JPEG stills only; no RAW over this path.
-
-Run it: open the project in Xcode, pick a simulator or your device (select your team under
-Signing), and press Run. In the Simulator, `CINEMAHUD_ADDRESS=127.0.0.1:8080` or
-`CINEMAHUD_BRIDGE=http://127.0.0.1:8899` as scheme environment variables connect to the camera
-simulator or to the Mac app running on the same machine.
-
-### Build an IPA with GitHub Actions
-
-Run **Build iOS IPA** from the Actions tab (or push to `main` / a `v*` tag). The workflow uploads
-the IPA as the `CinemaHUD-iOS-IPA` artifact. With no signing secrets, it produces an unsigned IPA
-that must be signed before installation. To have the workflow export an Ad Hoc signed IPA, add these
-repository Actions secrets:
-
-- `APPLE_CERTIFICATE_BASE64`: base64-encoded Apple Distribution `.p12` certificate.
-- `APPLE_CERTIFICATE_PASSWORD`: password for that `.p12` file.
-- `PROVISIONING_PROFILE_BASE64`: base64-encoded Ad Hoc provisioning profile for
-  `com.shivvyas.cinemahud.mobile`.
-- `APPLE_TEAM_ID`: your Apple Developer Team ID.
-
-All four signing secrets must be set for signed export. The provisioning profile must include the
-devices where you intend to install the Ad Hoc build.
-
-Bridge protocol (plain HTTP on port 8899, Bonjour `_cinemahud._tcp`): `GET /state` (JSON),
-`GET /events` (server-sent state changes), `GET /stream` (MJPEG-style framed JPEG bytes),
-`POST /cmd` (`{"op":"setISO","value":"800"}`). Any client can use it.
-
-## Building
-
-Requires Xcode 15+ command line tools (Swift 5.9+) and macOS 14+.
+需要 macOS 14 或更新版本、Xcode 15 或更新版本，以及 Swift 5.9 或更新版本。
 
 ```sh
-swift test                 # unit tests for the protocol layer
-./scripts/build-dmg.sh     # → build/CinemaHUD.app and build/CinemaHUD-<version>.dmg
+swift test                 # 运行协议层单元测试
+./scripts/build-dmg.sh     # 生成 build/CinemaHUD.app 和版本化 DMG
 ```
 
-### Developing without a camera
+iOS 工程由 XcodeGen 根据 `iOS/project.yml` 生成。可在 Xcode 中打开 `iOS/CinemaHUDMobile.xcodeproj`，选择模拟器或设备并运行；在真机上运行时，需要在“签名与功能”中选择开发团队。
 
-`tools/camerasim.py` is a fake α6400 (needs Python 3 with Pillow). It answers SSDP discovery,
-JSON-RPC and streams a synthetic live view whose brightness follows the exposure settings.
+## 相机诊断工具
+
+已连接相机时可运行下列命令检查 Wi-Fi API 或 USB PTP 通信：
 
 ```sh
-python3 tools/camerasim.py                       # JSON-RPC on :8080
+tools/probe.sh
+swift run usbprobe
+swift run usbprobe --set shutter=1/50 --rec --af --shoot --watch
+PTP_DEBUG=1 swift run usbprobe
+```
+
+桥接服务使用本地 HTTP 端口 8899：`GET /state` 读取状态，`GET /events` 接收状态变化，`GET /stream` 接收实时 MJPEG 画面，`POST /cmd` 发送控制命令。
+
+## 无相机开发
+
+`tools/camerasim.py` 可模拟 α6400 的网络 API 和实时画面，需要 Python 3 与 Pillow：
+
+```sh
+python3 tools/camerasim.py
 CINEMAHUD_ADDRESS=127.0.0.1:8080 swift run CinemaHUD
 ```
 
-Simulator flags: `--stills` (mode dial on a still position), `--pz` (power-zoom lens),
-`--photo photo.jpg` (serve a still photo as the live view; try one with a face for Shot assist).
+模拟器参数：`--stills` 模拟照片档位，`--pz` 模拟电动变焦镜头，`--photo photo.jpg` 使用指定图片作为实时画面。
 
-Other development environment variables: `CINEMAHUD_WINDOW=WxH`, `CINEMAHUD_OVERLAYS=peaking,zebra,crop=2.39,hidehud`,
-`CINEMAHUD_SNAPSHOT=/path.png` (renders the window to a PNG), `CINEMAHUD_QUIT=1`, `CINEMAHUD_TRACE=1`
-(logs frame and assist decisions).
+## 项目结构
 
-### Checking a real camera
+- `Sources/SonyCameraKit`：Sony 相机协议、USB / Wi-Fi 传输和会话管理。
+- `Sources/CinemaUI`：Mac 与 iOS 共用的 SwiftUI 监看界面和画面处理。
+- `Sources/CinemaAudio`：现场录音、音频同步及文件导出。
+- `Sources/CinemaHUD`：macOS 应用入口、菜单和快捷键。
+- `Sources/usbprobe`：USB 相机诊断命令行工具。
+- `iOS/`：iPhone / iPad 应用工程。
+- `Tests/`：协议、相机状态、图像和音频处理测试。
+- `tools/camerasim.py`：网络相机模拟器。
+- `docs/superpowers/specs/`：功能设计文档。
 
-```sh
-tools/probe.sh                     # Wi-Fi: versions, available APIs, first event, liveview URL
-swift run usbprobe                 # USB: device info, every property, one liveview frame, fps
-swift run usbprobe --set shutter=1/50 --rec --af --shoot --watch   # exercise controls
-PTP_DEBUG=1 swift run usbprobe     # trace every PTP transaction
-```
+## 当前验证状态
 
-## Layout
+USB 连接已在真实 α6400 上验证。Wi-Fi 路径按 Sony Camera Remote API 实现，并已通过模拟器端到端验证，尚未在相机机身上完成验证。照片模式和现场音频中的部分流程目前仍待真实设备验证。
 
-- `Sources/SonyCameraKit` — protocol library. `CameraBackend` abstracts the transport; `WiFiBackend` (SSDP discovery, JSON-RPC client, liveview stream parser) and `USB/SonyUSBBackend` (IOUSBHost transport, PTP transactions, Sony SDIO handshake, property parsing, notch stepping) both feed `CameraSession`, the observable object the UI talks to.
-- `Sources/usbprobe` — command-line hardware probe for the USB path.
-- `Sources/CinemaUI` — the shared SwiftUI monitor (Mac and iOS): connect screen, monitor and photo views, HUD strips and tools, Core Image pipeline, Metal renderer, LUTs.
-- `Sources/CinemaHUD` — the macOS app shell: menus, keyboard shortcuts, dev hooks.
-- `Sources/SonyCameraKit/Bridge` — Mac-side bridge server, iOS-side bridge client, Bonjour discovery.
-- `iOS/` — the iPhone / iPad app target.
-- `Tests/SonyCameraKitTests` — parser, event decoding, request encoding, device description parsing.
-- `tools/camerasim.py` — fake camera. `tools/probe.sh` — hardware check.
-- `scripts/build-dmg.sh` — release build, `.app` assembly, ad-hoc codesign, DMG.
-- `docs/superpowers/specs/` — design spec.
-
-## Status
-
-USB path verified on a physical α6400. Wi-Fi path built to the published Camera Remote API and
-exercised end to end against the simulator; not yet verified on the body.
+α6400 上的 USB 实时取景、相机控制、电池状态和视频录制已经验证。照片传输、照片回看与清晰度判断目前已在模拟器上测试，仍需相机实测。现场音频到 Logic、真实 SD 卡素材同步和 Final Cut Pro XML 导入流程也仍待完整实测。

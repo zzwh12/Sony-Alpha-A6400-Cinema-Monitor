@@ -42,7 +42,7 @@ struct ReviewView: View {
                 } else if failed {
                     VStack(spacing: 6) {
                         Image(systemName: "photo.badge.exclamationmark").font(.system(size: 40)).foregroundStyle(Theme.dim)
-                        Text("Cannot decode \(current?.filename ?? "file")").font(Theme.mono(12)).foregroundStyle(Theme.dim)
+                Text("无法解码图像：\(current?.filename ?? "文件")").font(Theme.mono(12)).foregroundStyle(Theme.dim)
                     }
                 } else {
                     ProgressView().controlSize(.large)
@@ -123,8 +123,8 @@ struct ReviewView: View {
                     .overlay(Rectangle().stroke(Color.white.opacity(0.7), lineWidth: 1))
             }
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text(report.verdict.rawValue).font(.system(size: 15, weight: .heavy)).foregroundStyle(color)
-                Text(String(format: "%.0f%% of peak", report.ratio * 100)).font(Theme.mono(11)).foregroundStyle(Theme.dim)
+                Text(localizedCameraValue(report.verdict.rawValue)).font(.system(size: 15, weight: .heavy)).foregroundStyle(color)
+                Text(String(format: "峰值的 %.0f%%", report.ratio * 100)).font(Theme.mono(11)).foregroundStyle(Theme.dim)
                 Spacer()
                 Text("100%").font(Theme.label(9)).tracking(1.2).foregroundStyle(Theme.dim)
             }
@@ -140,7 +140,7 @@ struct ReviewView: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            Button { session.review(nil) } label: { Text("◀ LIVE").font(.system(size: 12, weight: .bold)).foregroundStyle(.white) }
+            Button { session.review(nil) } label: { Text("◀ 实时").font(.system(size: 12, weight: .bold)).foregroundStyle(.white) }
                 .buttonStyle(.plain).focusEffectDisabled()
             Text(current?.filename ?? "").font(.system(size: 13, weight: .bold)).foregroundStyle(.white)
             if shot.hasBoth {
@@ -155,7 +155,7 @@ struct ReviewView: View {
             if let full { Text(String(full.width) + "×" + String(full.height)).font(Theme.mono(12)).foregroundStyle(Theme.dim) }
             Text(shot.exposure.summary).font(Theme.mono(12)).foregroundStyle(.white)
             Spacer()
-            if shot.transferring { Text(shot.raw == nil ? "TRANSFERRING RAW…" : "TRANSFERRING…").font(Theme.label(10)).tracking(1.5).foregroundStyle(Theme.warn) }
+            if shot.transferring { Text(shot.raw == nil ? "正在传输 RAW…" : "正在传输…").font(Theme.label(10)).tracking(1.5).foregroundStyle(Theme.warn) }
             if let e = shot.error { Text(e).font(Theme.mono(11)).foregroundStyle(Theme.warn).lineLimit(1) }
             Text(zoom == 0 ? "FIT" : "\(Int(zoom * 100))%").font(Theme.label(10)).tracking(1.5).foregroundStyle(Theme.dim)
             Text("\(session.captures.firstIndex(where: { $0.id == shot.id }).map { $0 + 1 } ?? 0)/\(session.captures.count)").font(Theme.mono(12)).foregroundStyle(Theme.dim)

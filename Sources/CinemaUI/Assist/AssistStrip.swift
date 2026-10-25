@@ -20,7 +20,7 @@ struct AssistStrip: View {
                         }
                         Text(line.text).font(Theme.label(10)).tracking(1.2).foregroundStyle(severity == .warn ? Theme.warn : Theme.dim)
                         if controller.applied == line.id {
-                            Text("· APPLIED").font(Theme.label(10)).tracking(1.2).foregroundStyle(Theme.ok)
+                            Text("· 已应用").font(Theme.label(10)).tracking(1.2).foregroundStyle(Theme.ok)
                         } else if let fix {
                             Text("· \(fix.label) ↵").font(Theme.label(10)).tracking(1.2).foregroundStyle(Theme.text)
                         }

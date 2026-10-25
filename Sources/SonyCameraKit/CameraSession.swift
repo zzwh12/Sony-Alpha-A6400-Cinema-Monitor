@@ -96,7 +96,7 @@ public final class CameraSession {
         lastError = nil
         let found = await SSDPDiscovery.discover(timeout: 3)
         guard let cam = found.first else {
-            phase = .failed("No camera found. Join the camera's DIRECT-xxxx Wi-Fi and put it in “Ctrl w/ Smartphone”.")
+        phase = .failed("没有找到相机。请加入相机的 DIRECT-xxxx Wi-Fi 网络，并开启“用智能手机控制”。")
             return
         }
         await connect(WiFiBackend(camera: cam))
@@ -107,7 +107,7 @@ public final class CameraSession {
         if !s.hasPrefix("http") { s = "http://" + s }
         if !s.contains(":8080") && !s.dropFirst(7).contains(":") { s += ":8080" }
         if !s.hasSuffix("/sony") { s = s.trimmingCharacters(in: CharacterSet(charactersIn: "/")) + "/sony" }
-        guard let url = URL(string: s) else { phase = .failed("Bad address"); return }
+        guard let url = URL(string: s) else { phase = .failed("地址无效"); return }
         await connect(WiFiBackend(camera: DiscoveredCamera(friendlyName: "Sony Camera", modelName: "", serviceURL: url)))
     }
 
@@ -116,12 +116,12 @@ public final class CameraSession {
         #if canImport(IOUSBHost)
         let devices = SonyUSBBackend.availableDevices()
         guard let dev = devices.first(where: \.isSony) ?? devices.first else {
-            phase = .failed("No camera on USB. On the camera: MENU → Setup → USB Connection → PC Remote, then connect the cable.")
+        phase = .failed("未通过 USB 找到相机。请在相机上选择 MENU → 设置 → USB 连接 → PC 遥控，然后重新连接线缆。")
             return
         }
         await connect(SonyUSBBackend(device: dev))
         #else
-        phase = .failed("USB control is not available on this device. Use the camera's Wi-Fi.")
+        phase = .failed("此设备不支持 USB 控制，请使用相机的 Wi-Fi 连接。")
         #endif
     }
 

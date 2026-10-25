@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<string>zh-Hans</string>
 	<key>CFBundleDisplayName</key>
 	<string>CinemaHUD</string>
 	<key>CFBundleExecutable</key>
@@ -32,7 +32,7 @@
 		<string>_cinemahud._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>CinemaHUD finds and controls your Sony camera, or a Mac running CinemaHUD, on the local network.</string>
+	<string>CinemaHUD 可在本地网络中搜索并控制 Sony 相机或运行 CinemaHUD 的 Mac。</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

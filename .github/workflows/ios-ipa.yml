@@ -1,4 +1,4 @@
-name: Build iOS IPA
+name: 构建 iOS 安装包
 
 on:
   workflow_dispatch:
@@ -12,19 +12,19 @@ permissions:
 
 jobs:
   build:
-    name: Build CinemaHUD for iOS
+    name: 编译 CinemaHUD iOS 版
     runs-on: macos-15
     steps:
-      - name: Check out repository
+      - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: Install XcodeGen
+      - name: 安装 XcodeGen
         run: brew install xcodegen
 
-      - name: Generate Xcode project
+      - name: 生成 Xcode 工程
         run: xcodegen generate --spec iOS/project.yml
 
-      - name: Set up signing (when secrets are configured)
+      - name: 配置签名（如已设置密钥）
         id: signing
         shell: bash
         env:
@@ -37,7 +37,7 @@ jobs:
 
           if [[ -z "$APPLE_CERTIFICATE_BASE64" || -z "$APPLE_CERTIFICATE_PASSWORD" || -z "$PROVISIONING_PROFILE_BASE64" || -z "$APPLE_TEAM_ID" ]]; then
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Signing secrets are incomplete; a build-only unsigned IPA will be created."
+            echo "签名密钥未完整设置，将生成未签名 IPA。"
             exit 0
           fi
 
@@ -65,7 +65,7 @@ jobs:
           echo "enabled=true" >> "$GITHUB_OUTPUT"
           echo "profile_uuid=$PROFILE_UUID" >> "$GITHUB_OUTPUT"
 
-      - name: Archive and export signed IPA
+      - name: 归档并导出签名 IPA
         if: steps.signing.outputs.enabled == 'true'
         shell: bash
         env:
@@ -109,7 +109,7 @@ jobs:
             -exportOptionsPlist "$OPTIONS_PATH"
           cp "$EXPORT_PATH/CinemaHUDMobile.ipa" "$GITHUB_WORKSPACE/CinemaHUDMobile.ipa"
 
-      - name: Build and package unsigned IPA
+      - name: 编译并打包未签名 IPA
         if: steps.signing.outputs.enabled != 'true'
         shell: bash
         run: |
@@ -130,10 +130,10 @@ jobs:
           cp -R "$APP_PATH" "$PACKAGE_PATH/Payload/"
           (cd "$PACKAGE_PATH" && zip -qry "$GITHUB_WORKSPACE/CinemaHUDMobile-unsigned.ipa" Payload)
 
-      - name: Upload IPA artifact
+      - name: 上传 IPA 构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: CinemaHUD-iOS-IPA
+          name: CinemaHUD-iOS-安装包
           path: CinemaHUDMobile*.ipa
           if-no-files-found: error
           retention-days: 14

@@ -96,11 +96,11 @@ struct CinemaHUDApp: App {
                     ForEach(FeedColorSpace.allCases) { Text($0.rawValue).tag($0) }
                 }
                 Picker("Smooth Motion (adds one frame of delay)", selection: Binding(get: { session.motionFactor }, set: { session.motionFactor = $0 })) {
-                    Text("Off").tag(1); Text("×2 (30 fps)").tag(2); Text("×4 (60 fps)").tag(4); Text("×8 (120 fps)").tag(8)
+                    Text("Off").tag(1); Text("×2（30 fps）").tag(2); Text("×4（60 fps）").tag(4); Text("×8（120 fps）").tag(8)
                 }
                 Button("Cycle Smooth Motion") { session.motionFactor = [1: 2, 2: 4, 4: 8][session.motionFactor] ?? 1 }.keyboardShortcut("m", modifiers: [])
                 Picker("Live Denoise", selection: Binding(get: { session.denoise }, set: { session.denoise = $0 })) {
-                    Text("Off").tag(Float(0)); Text("NR1 (light)").tag(Float(0.5)); Text("NR2 (strong)").tag(Float(1))
+                    Text("Off").tag(Float(0)); Text("降噪 1（轻）").tag(Float(0.5)); Text("降噪 2（强）").tag(Float(1))
                 }
                 Button("Cycle Live Denoise") { session.denoise = session.denoise == 0 ? 0.5 : (session.denoise > 0.6 ? 0 : 1) }.keyboardShortcut("d", modifiers: [])
                 Divider()

@@ -30,22 +30,22 @@ final class AssistRulesTests: XCTestCase {
         XCTAssertEqual(AssistRules.skinTarget(for: .pp10), 45)
     }
     func testStopsLabelRoundsToThirds() {
-        XCTAssertEqual(AssistRules.stopsLabel(1.0), "1 STOP")
-        XCTAssertEqual(AssistRules.stopsLabel(1.28), "1.3 STOPS")
-        XCTAssertEqual(AssistRules.stopsLabel(0.7), "0.7 STOP")
+        XCTAssertEqual(AssistRules.stopsLabel(1.0), "1 档")
+        XCTAssertEqual(AssistRules.stopsLabel(1.28), "1.3 档")
+        XCTAssertEqual(AssistRules.stopsLabel(0.7), "0.7 档")
     }
     func testFaceOneStopUnderInManualOffersISO() throws {
         let f = findings(face(luma: 27.5), manualState())   // 27.5 is exactly one stop under 55
         let under = try XCTUnwrap(f.first { $0.id == "face-under" })
-        XCTAssertEqual(under.fact, "FACE 1 STOP UNDER")
+        XCTAssertEqual(under.fact, "人脸曝光不足 1 档")
         XCTAssertEqual(under.severity, .warn)
-        XCTAssertEqual(under.fix, Fix(label: "EI 800 → 1600", command: .setISO("1600")))
+        XCTAssertEqual(under.fix, Fix(label: "感光度 800 → 1600", command: .setISO("1600")))
     }
     func testFaceOverInApertureModeOffersEV() throws {
         var s = manualState(); s.exposureMode = "Aperture"
         let f = findings(face(luma: 110), s)                // one stop over
         let over = try XCTUnwrap(f.first { $0.id == "face-over" })
-        XCTAssertEqual(over.fix, Fix(label: "EV 0 → -1.0", command: .setExposureCompensation(index: -3)))
+        XCTAssertEqual(over.fix, Fix(label: "曝光 0 → -1.0", command: .setExposureCompensation(index: -3)))
     }
     func testNoFixWhenCommandUnsupported() throws {
         var s = manualState(); s.availableAPIs.remove("setIsoSpeedRate")
@@ -65,8 +65,8 @@ final class AssistRulesTests: XCTestCase {
         var m = face(luma: 55, sharpness: 20)               // soft face (< 0.6 × 100)
         m.sharpestRegion = CGPoint(x: 0.9, y: 0.9)          // far from the face centre (0.5, 0.35)
         let miss = try XCTUnwrap(findings(m, manualState()).first { $0.id == "focus-missed" })
-        XCTAssertEqual(miss.fact, "FOCUS OFF SUBJECT")
-        XCTAssertEqual(miss.fix, Fix(label: "AF ON FACE", command: .touchAF(x: 0.5, y: 0.35)))
+        XCTAssertEqual(miss.fact, "焦点未落在主体上")
+        XCTAssertEqual(miss.fix, Fix(label: "对焦到人脸", command: .touchAF(x: 0.5, y: 0.35)))
         var near = face(luma: 55, sharpness: 20); near.sharpestRegion = CGPoint(x: 0.55, y: 0.4)
         XCTAssertNil(findings(near, manualState()).first { $0.id == "focus-missed" })
     }
@@ -78,30 +78,30 @@ final class AssistRulesTests: XCTestCase {
     func testShutterAngleFarFrom180InVideoOnly() throws {
         var s = manualState(); s.shutterSpeed = "1/500"
         let f = try XCTUnwrap(findings(face(luma: 55), s).first { $0.id == "shutter-angle" })
-        XCTAssertEqual(f.fact, "SHUTTER 17°")
+        XCTAssertEqual(f.fact, "快门角度 17°")
         XCTAssertEqual(f.fix, Fix(label: "1/500 → 1/48", command: .setShutterSpeed("1/48")))
-        XCTAssertTrue(f.detail.contains("narrower"), "the model must be told which way the angle is off")
+        XCTAssertTrue(f.detail.contains("小于"), "模型需要知道快门角度偏离的方向")
         var slow = s; slow.shutterSpeed = "1/30"
         let wide = try XCTUnwrap(findings(face(luma: 55), slow).first { $0.id == "shutter-angle" })
-        XCTAssertEqual(wide.fact, "SHUTTER 288°")
-        XCTAssertTrue(wide.detail.contains("wider"))
+        XCTAssertEqual(wide.fact, "快门角度 288°")
+        XCTAssertTrue(wide.detail.contains("大于"))
         XCTAssertNil(findings(face(luma: 55), s, mode: .photo).first { $0.id == "shutter-angle" })
     }
     func testHorizonAndHeadroom() {
         var m = face(luma: 55, rect: CGRect(x: 0.4, y: 0.0, width: 0.2, height: 0.3)); m.horizonDegrees = 3.2
         let f = findings(m, manualState())
-        XCTAssertEqual(f.first { $0.id == "horizon" }?.fact, "HORIZON 3° OFF")
-        XCTAssertEqual(f.first { $0.id == "headroom" }?.fact, "TOO TIGHT ON TOP")
+        XCTAssertEqual(f.first { $0.id == "horizon" }?.fact, "地平线偏斜 3°")
+        XCTAssertEqual(f.first { $0.id == "headroom" }?.fact, "头顶空间不足")
         var low = face(luma: 55, rect: CGRect(x: 0.4, y: 0.6, width: 0.2, height: 0.3))
         low.horizonDegrees = 0.5
-        XCTAssertEqual(findings(low, manualState()).first { $0.id == "headroom" }?.fact, "SUBJECT LOW IN FRAME")
+        XCTAssertEqual(findings(low, manualState()).first { $0.id == "headroom" }?.fact, "主体位置偏低")
     }
     func testLookSuggestionsOnlyWhenTheShotIsClean() throws {
         var s = manualState(); s.fNumber = "5.6"; s.fNumberCandidates = ["2.8", "4.0", "5.6", "8.0"]; s.availableAPIs.insert("setFNumber")
         let clean = findings(face(luma: 55), s)
         XCTAssertEqual(clean.map(\.id), ["dof", "mist"])
         XCTAssertEqual(clean[0].fix, Fix(label: "F5.6 → F2.8", command: .setFNumber("2.8")))
-        XCTAssertEqual(clean[1].fix, Fix(label: "MIST ON", command: .monitorMist(0.5)))
+        XCTAssertEqual(clean[1].fix, Fix(label: "开启柔光", command: .monitorMist(0.5)))
         XCTAssertEqual(clean[0].kind, .look)
         // Mist already on: no mist nudge. Iris already wide: no iris nudge.
         XCTAssertEqual(AssistRules.findings(face(luma: 55), state: s, profile: .standard, projectFPS: 24, shootingMode: .video, mist: 0.5).map(\.id), ["dof"])

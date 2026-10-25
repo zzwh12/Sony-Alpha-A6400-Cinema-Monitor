@@ -51,7 +51,7 @@ struct LaunchIntroView: View {
                 }
                 .scaleEffect(wordScale)
                 .opacity(wordOpacity)
-                Text("CINEMA HUD MONITOR")
+                Text("电影监视器")
                     .font(.system(size: 13, weight: .semibold)).tracking(5)
                     .foregroundStyle(.white.opacity(0.7))
                     .opacity(subtitleOpacity)

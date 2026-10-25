@@ -5,16 +5,16 @@ import FoundationModels
 @available(macOS 26, iOS 26, *)
 @Generable
 struct AssistAdviceLine {
-    @Guide(description: "The id of the finding this line explains, exactly as given in brackets")
+    @Guide(description: "此行所解释问题的编号，必须与方括号中的编号完全一致")
     var finding: String
-    @Guide(description: "Three to six words, no numbers, no settings, like a camera assistant calling it out")
+    @Guide(description: "用三到六个词简短指出问题，像摄影助理现场提醒；不要写数字或设置项")
     var text: String
 }
 
 @available(macOS 26, iOS 26, *)
 @Generable
 struct AssistAdvice {
-    @Guide(description: "One line per finding, most important first", .maximumCount(2))
+    @Guide(description: "每个问题写一行，按重要程度排序", .maximumCount(2))
     var lines: [AssistAdviceLine]
 }
 

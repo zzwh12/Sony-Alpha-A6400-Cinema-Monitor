@@ -13,7 +13,7 @@ struct MobileSettingsView: View {
             Form {
                 Section("Connection") {
                     HStack { Text("Camera"); Spacer(); Text(session.cameraName.isEmpty ? "—" : session.cameraName).foregroundStyle(Theme.dim) }
-                    HStack { Text("Transport"); Spacer(); Text(session.transport?.rawValue ?? "—").foregroundStyle(Theme.dim) }
+                    HStack { Text("Transport"); Spacer(); Text(session.transport.map { localizedCameraValue($0.rawValue.uppercased()) } ?? "—").foregroundStyle(Theme.dim) }
                     Button("Disconnect", role: .destructive) { session.disconnect(); dismiss() }
                 }
                 Section("Display") {
@@ -24,7 +24,7 @@ struct MobileSettingsView: View {
                         Text("Off").tag(1); Text("×2").tag(2); Text("×4").tag(4); Text("×8").tag(8)
                     }
                     Picker("Live denoise", selection: Binding(get: { session.denoise }, set: { session.denoise = $0 })) {
-                        Text("Off").tag(Float(0)); Text("NR1").tag(Float(0.5)); Text("NR2").tag(Float(1))
+                        Text("Off").tag(Float(0)); Text("降噪 1").tag(Float(0.5)); Text("降噪 2").tag(Float(1))
                     }
                     Picker("Camera picture profile", selection: $ov.profile) { ForEach(PictureProfile.allCases) { Text($0.rawValue).tag($0) } }
                     Toggle("Apply display LUT (709 view)", isOn: $ov.lutOn).disabled(!(overlays.profile.isLog || overlays.customLUT != nil))
@@ -46,7 +46,7 @@ struct MobileSettingsView: View {
                     Slider(value: $ov.zebraLevel, in: 0.7 ... 1.0, step: 0.05)
                 }
                 Section("Captures") {
-                    HStack { Text("This session"); Spacer(); Text("\(session.captures.count) shots").foregroundStyle(Theme.dim) }
+                    HStack { Text("This session"); Spacer(); Text("\(session.captures.count) 张").foregroundStyle(Theme.dim) }
                     Text("Files the camera hands over are saved in the Files app under CinemaHUD. Over the Mac bridge, files stay on the Mac in ~/Pictures/CinemaHUD.")
                         .font(.footnote).foregroundStyle(Theme.dim)
                 }
